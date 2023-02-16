@@ -1,5 +1,5 @@
 {
-  "name": "can-crypto-badge-sbt",
+  "name": "can-evm-dquest",
   "version": "1.0.0",
   "description": "CAN CryptoBadge Soulbound Token",
   "main": "hardhat.config.js",
@@ -54,10 +54,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git@git.baikal.io:can/can-crypto-badge-sbt.git"
+    "url": "git@https://git.baikal.io/can/can-evm-dquest"
   },
   "keywords": [
-    "sbt",
+    "can-evm-dquest",
     "hardhat",
     "solidity",
     "openzeppelin",
