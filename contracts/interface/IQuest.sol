@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.18;
+import "../lib/DQuestStructLib.sol";
 
 /// @title An interface for a Quest contract
 /// @notice Quest contract is use to manage Questers, Missions and Outcomes
@@ -24,45 +25,6 @@ interface IQuest {
         InProgress,
         Completed,
         Rewarded
-    }
-
-    /// @dev Defines the possible types of operators for a mission node.
-    /// States:
-    /// - And = All child nodes must evaluate to true for this node to be true.
-    /// - Or = At least one child node must evaluate to true for this node to be true.
-    enum OperatorType {
-        And,
-        Or
-    }
-
-    /// @notice MissionNode stands for a mission parameters
-    /// @dev MisisonNode can be an operator or a mission with parameters defined inside of Slot0/Slot1 fields
-    /// @param isMission Is the node a mission or an operator
-    /// @param missionHandlerAddress The address of MissionHandler contract to validate the mission with given parameters, equals 0x0 if isMission = false
-    /// @param operatorType The operator type = And/Or if isMission = false
-    /// @param leftNode Left side node of this Node
-    /// @param rightNode Right side node of this Node
-    /// @param tokenAddress Address of the token contract to validate
-    /// @param amount Amount to validate
-    /// @param blockHeight Block height to validate
-    /// @param snapshotId Snapshot's poll ID to validate
-    /// @param tweetId Twitter's tweet ID to validate
-    struct MissionNode {
-        bool isMission;
-        address missionHandlerAddress;
-        OperatorType operatorType;
-        uint256 leftNode;
-        uint256 rightNode;
-        address tokenAddress;
-        uint256 amount;
-        uint256 blockHeight;
-        uint256 snapshotId;
-        string tweetId;
-    }
-
-    // TODO Define clearer
-    struct Outcome {
-        address tokenAddress;
     }
 
     /// @notice This event is triggered when the set of mission nodes is updated.
