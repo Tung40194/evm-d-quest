@@ -4,11 +4,13 @@ pragma solidity 0.8.18;
 library DQuestStrucLib {
     /// @dev Defines the possible types of operators for a mission node.
     /// States:
-    /// - And = All child nodes must evaluate to true for this node to be true.
-    /// - Or = At least one child node must evaluate to true for this node to be true.
+    /// - AND = All child nodes must evaluate to true for this node to be true.
+    /// - OR = At least one child node must evaluate to true for this node to be true.
+    /// - NULL = Node is a mission.
     enum OperatorType {
-        And,
-        Or
+        AND,
+        OR,
+        NULL
     }
 
     /// @notice MissionNode stands for a mission parameters
