@@ -42,24 +42,22 @@ interface IQuest {
     /// @param operatorType The operator type = And/Or if isMission = false
     /// @param leftNode Left side node of this Node
     /// @param rightNode Right side node of this Node
+    /// @param tokenAddress Address of the token contract to validate
+    /// @param amount Amount to validate
+    /// @param blockHeight Block height to validate
+    /// @param snapshotId Snapshot's poll ID to validate
+    /// @param tweetId Twitter's tweet ID to validate
     struct MissionNode {
         bool isMission;
         address missionHandlerAddress;
         OperatorType operatorType;
         uint256 leftNode;
         uint256 rightNode;
-        bool boolSlot0;
-        bool boolSlot1;
-        address addressSlot0;
-        address addressSlot1;
-        uint256 uintSlot0;
-        uint256 uintSlot1;
-        int256 intSlot0;
-        int256 intSlot1;
-        bytes32 bytesSlot0;
-        bytes32 bytesSlot1;
-        string stringSlot0;
-        string stringSlot1;
+        address tokenAddress;
+        uint256 amount;
+        uint256 blockHeight;
+        uint256 snapshotId;
+        string tweetId;
     }
 
     // TODO Define clearer
