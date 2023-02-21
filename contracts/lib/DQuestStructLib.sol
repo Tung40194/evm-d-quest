@@ -4,13 +4,26 @@ pragma solidity 0.8.18;
 library DQuestStructLib {
     /// @dev Defines the possible types of operators for a mission node.
     /// States:
-    /// - NULL = Node is a mission.
-    /// - AND = All child nodes must evaluate to true for this node to be true.
-    /// - OR = At least one child node must evaluate to true for this node to be true.
+    /// - Null = Node is a mission.
+    /// - And = All child nodes must evaluate to true for this node to be true.
+    /// - Or = At least one child node must evaluate to true for this node to be true.
     enum OperatorType {
-        NULL,
-        AND,
-        OR
+        Null,
+        And,
+        Or
+    }
+
+    /// @dev Defines the possible types of Tweet for a Twitter mission.
+    /// States:
+    /// - Null = Not a Twitter mission.
+    /// - Like = Like Tweet mission.
+    /// - Share = Share Tweet mission.
+    /// - Retweet = Retweet Tweet mission.
+    enum TweetAction {
+        Null,
+        Like,
+        Share,
+        Retweet
     }
 
     /// @notice MissionNode stands for a mission parameters
@@ -38,6 +51,7 @@ library DQuestStructLib {
         uint256 blockHeight;
         uint256 snapshotId;
         string tweetId;
+        TweetAction tweetAction;
     }
 
     // TODO Define clearer / To be discuss in https://git.baikal.io/can/can-evm-dquest/-/issues/9
