@@ -29,11 +29,11 @@ interface IQuest {
 
     /// @notice This event is triggered when the set of mission nodes is updated.
     /// @param missionNodes An array of MissionNode objects.
-    event MissionNodeFormularsSet(MissionNode[] missionNodes);
+    event MissionNodeFormularsSet(DQuestStructLib.MissionNode[] missionNodes);
 
     /// @notice This event is triggered when the set of outcomes is updated.
     /// @param outcomes An array of Outcome objects.
-    event OutcomeSet(Outcome[] outcomes);
+    event OutcomeSet(DQuestStructLib.Outcome[] outcomes);
 
     /// @notice This event is triggered when an outcome is executed on a quester.
     /// @param quester The address of the quester who outcome is being executed on.
@@ -43,15 +43,33 @@ interface IQuest {
     /// @param quester The address of the newly added quester.
     event QuesterAdded(address indexed quester);
 
+    /// @notice This event is triggered when Quest is paused.
+    event QuestPaused();
+
+    /// @notice This event is triggered when Quest is unpaused.
+    event QuestUnpaused();
+
+    /// SETTER
+
     /// @notice Set the mission node formulas for this quest.
     /// @dev The input array must follow the AND/OR tree rule, or the function will revert.
     /// @param missionNodes An array of MissionNode structs.
-    function setMissionNodeFormulars(MissionNode[] calldata missionNodes) external;
+    function setMissionNodeFormulars(DQuestStructLib.MissionNode[] calldata missionNodes) external;
 
     /// @notice Set the outcomes for this quest.
     /// @dev Anyone can execute an outcome if the quester is eligible.
     /// @param outcomes An array of Outcome structs.
-    function setOutcomes(Outcome[] calldata outcomes) external;
+    function setOutcomes(DQuestStructLib.Outcome[] calldata outcomes) external;
+
+    /// QUEST
+
+    /// @notice Pauses the Quest
+    /// @dev Only the owner of the Quest can call this function. Also requires that the QuestStatus is Active.
+    function pauseQuest() external;
+
+    /// @notice Unpauses the Quest
+    /// @dev Only the owner of the Quest can call this function. Also requires that the QuestStatus is Active.
+    function unpauseQuest() external;
 
     /// @notice Update and return the quester's status.
     /// @dev Only the quester can call this function to validate their quests.
@@ -67,6 +85,8 @@ interface IQuest {
     /// @return executeSuccess Returns `true` if the outcome is executed successfully.
     /// Returns `false` if the execution fails or the quest is closed.
     function executeQuestOutcome(address quester) external returns (bool executeSuccess);
+
+    /// QUESTER
 
     /// @notice Add the caller to the quest as a quester.
     /// @dev This function adds `msg.sender` to the `allQuesters` array.

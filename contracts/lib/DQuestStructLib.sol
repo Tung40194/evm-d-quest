@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.18;
 
-library DQuestStrucLib {
+library DQuestStructLib {
     /// @dev Defines the possible types of operators for a mission node.
     /// States:
+    /// - NULL = Node is a mission.
     /// - AND = All child nodes must evaluate to true for this node to be true.
     /// - OR = At least one child node must evaluate to true for this node to be true.
-    /// - NULL = Node is a mission.
     enum OperatorType {
+        NULL,
         AND,
-        OR,
-        NULL
+        OR
     }
 
     /// @notice MissionNode stands for a mission parameters
