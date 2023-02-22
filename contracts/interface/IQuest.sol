@@ -7,25 +7,29 @@ import "../lib/DQuestStructLib.sol";
 interface IQuest {
     /// @dev Possible states of a Quest
     /// States:
-    /// - Ready = The quest has not yet started.
+    /// - NotStarted = The quest has not yet started.
     /// - Active = The quest is currently ongoing, between its start and end times.
-    /// - Close = The quest has expired or been paused.
+    /// - Closed = The quest has expired.
     enum QuestStatus {
-        Ready,
+        NotStarted,
         Active,
-        Close
+        Closed
     }
 
-    /// @dev Defines the possible states of a quester's status.
+    /// @dev Defines the possible states of a quester's status to current quest.
     /// States:
+    /// - NotEnrolled = The quester hasn't joined the quest.
     /// - InProgress = The quester has joined the quest and doing mission.
     /// - Completed = The quester has finished all missions in the quest.
     /// - Rewarded = The quester has successfully completed the quest and received a reward.
-    enum MyQuestStatus {
+    enum QuesterProgress {
+        NotEnrolled,
         InProgress,
         Completed,
         Rewarded
     }
+
+    /// EVENTS
 
     /// @notice This event is triggered when the set of mission nodes is updated.
     /// @param missionNodes An array of MissionNode objects.
@@ -57,11 +61,21 @@ interface IQuest {
     function setMissionNodeFormulars(DQuestStructLib.MissionNode[] calldata missionNodes) external;
 
     /// @notice Set the outcomes for this quest.
-    /// @dev Anyone can execute an outcome if the quester is eligible.
     /// @param outcomes An array of Outcome structs.
     function setOutcomes(DQuestStructLib.Outcome[] calldata outcomes) external;
 
-    /// QUEST
+    /// @notice Change status of quester's mission
+    /// @dev Only Oracles able to set mission status
+    /// @param quester Quester to change mission's status
+    /// @param missionNodeId Mission node ID of inside the missionNodeFormulars
+    /// @param isMissionDone Status of a quester's mission
+    function setMissionStatus(
+        address quester,
+        uint8 missionNodeId,
+        bool isMissionDone
+    ) external;
+
+    /// QUEST FUNCTIONS
 
     /// @notice Pauses the Quest
     /// @dev Only the owner of the Quest can call this function. Also requires that the QuestStatus is Active.
@@ -71,12 +85,16 @@ interface IQuest {
     /// @dev Only the owner of the Quest can call this function. Also requires that the QuestStatus is Active.
     function unpauseQuest() external;
 
-    /// @notice Update and return the quester's status.
+    /// @notice Update and return the quester's progress.
     /// @dev Only the quester can call this function to validate their quests.
     /// This function checks the status of all of the quester's missions and updates the
     /// allQuesterStatuses mapping.
-    /// @return questerStatus The latest Quester status after validating all missions.
-    function validateQuest() external returns (MyQuestStatus questerStatus);
+    /// @return questerProgress The latest Quester progress status after validating all missions.
+    function validateQuest() external returns (QuesterProgress questerProgress);
+
+    /// @notice Validate a specific mission of caller
+    /// @param missionNodeId Mission node ID of inside the missionNodeFormulars
+    function validateMission(uint8 missionNodeId) external;
 
     /// @notice Execute a defined outcome of the quest.
     /// @dev This function is public and can only be called by anyone.
@@ -86,7 +104,7 @@ interface IQuest {
     /// Returns `false` if the execution fails or the quest is closed.
     function executeQuestOutcome(address quester) external returns (bool executeSuccess);
 
-    /// QUESTER
+    /// QUESTER FUNCTIONS
 
     /// @notice Add the caller to the quest as a quester.
     /// @dev This function adds `msg.sender` to the `allQuesters` array.
