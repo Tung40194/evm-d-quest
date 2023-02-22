@@ -71,7 +71,7 @@ interface IQuest {
     /// @param isMissionDone Status of a quester's mission
     function setMissionStatus(
         address quester,
-        uint8 missionNodeId,
+        uint256 missionNodeId,
         bool isMissionDone
     ) external;
 
@@ -94,7 +94,7 @@ interface IQuest {
 
     /// @notice Validate a specific mission of caller
     /// @param missionNodeId Mission node ID of inside the missionNodeFormulars
-    function validateMission(uint8 missionNodeId) external;
+    function validateMission(uint256 missionNodeId) external;
 
     /// @notice Execute a defined outcome of the quest.
     /// @dev This function is public and can only be called by anyone.
