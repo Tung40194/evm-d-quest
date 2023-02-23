@@ -69,11 +69,7 @@ interface IQuest {
     /// @param quester Quester to change mission's status
     /// @param missionNodeId Mission node ID of inside the missionNodeFormulars
     /// @param isMissionDone Status of a quester's mission
-    function setMissionStatus(
-        address quester,
-        uint256 missionNodeId,
-        bool isMissionDone
-    ) external;
+    function setMissionStatus(address quester, uint256 missionNodeId, bool isMissionDone) external;
 
     /// QUEST FUNCTIONS
 
