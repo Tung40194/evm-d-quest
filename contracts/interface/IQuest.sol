@@ -32,8 +32,8 @@ interface IQuest {
     /// EVENTS
 
     /// @notice This event is triggered when the set of mission nodes is updated.
-    /// @param missionNodes An array of MissionNode objects.
-    event MissionNodeFormularsSet(DQuestStructLib.MissionNode[] missionNodes);
+    /// @param missionFormulas An array of MissionNode objects.
+    event MissionNodeFormulasSet(DQuestStructLib.MissionNode[] missionFormulas);
 
     /// @notice This event is triggered when the set of outcomes is updated.
     /// @param outcomes An array of Outcome objects.
@@ -50,15 +50,15 @@ interface IQuest {
     /// @notice This event is triggered when Quest is paused.
     event QuestPaused();
 
-    /// @notice This event is triggered when Quest is unpaused.
-    event QuestUnpaused();
+    /// @notice This event is triggered when Quest is resumed.
+    event QuestResumed();
 
     /// SETTER
 
     /// @notice Set the mission node formulas for this quest.
     /// @dev The input array must follow the AND/OR tree rule, or the function will revert.
-    /// @param missionNodes An array of MissionNode structs.
-    function setMissionNodeFormulars(DQuestStructLib.MissionNode[] calldata missionNodes) external;
+    /// @param missionFormulas An array of MissionNode structs.
+    function setMissionNodeFormulas(DQuestStructLib.MissionNode[] calldata missionFormulas) external;
 
     /// @notice Set the outcomes for this quest.
     /// @param outcomes An array of Outcome structs.
@@ -69,7 +69,11 @@ interface IQuest {
     /// @param quester Quester to change mission's status
     /// @param missionNodeId Mission node ID of inside the missionNodeFormulars
     /// @param isMissionDone Status of a quester's mission
-    function setMissionStatus(address quester, uint256 missionNodeId, bool isMissionDone) external;
+    function setMissionStatus(
+        address quester,
+        uint256 missionNodeId,
+        bool isMissionDone
+    ) external;
 
     /// QUEST FUNCTIONS
 
@@ -77,16 +81,15 @@ interface IQuest {
     /// @dev Only the owner of the Quest can call this function. Also requires that the QuestStatus is Active.
     function pauseQuest() external;
 
-    /// @notice Unpauses the Quest
+    /// @notice Resume the Quest
     /// @dev Only the owner of the Quest can call this function. Also requires that the QuestStatus is Active.
-    function unpauseQuest() external;
+    function resumeQuest() external;
 
-    /// @notice Update and return the quester's progress.
+    /// @notice Update the quester's progress.
     /// @dev Only the quester can call this function to validate their quests.
     /// This function checks the status of all of the quester's missions and updates the
-    /// allQuesterStatuses mapping.
-    /// @return questerProgress The latest Quester progress status after validating all missions.
-    function validateQuest() external returns (QuesterProgress questerProgress);
+    /// allQuesterProgresses mapping.
+    function validateQuest() external;
 
     /// @notice Validate a specific mission of caller
     /// @param missionNodeId Mission node ID of inside the missionNodeFormulars
@@ -104,8 +107,7 @@ interface IQuest {
 
     /// @notice Add the caller to the quest as a quester.
     /// @dev This function adds `msg.sender` to the `allQuesters` array.
-    /// @return addSuccess Returns `false` if the caller is already inside the quest or the quest is closed.
-    function addQuester() external returns (bool addSuccess);
+    function addQuester() external;
 
     /// @notice Get the total number of questers who have joined the current quest.
     /// @return totalQuesters Returns the number of questers in the quest.

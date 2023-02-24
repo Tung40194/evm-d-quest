@@ -49,7 +49,7 @@ library DQuestStructLib {
         address tokenAddress;
         uint256 amount;
         uint256 blockHeight;
-        uint256 snapshotId;
+        string snapshotId;
         string tweetId;
         TweetAction tweetAction;
     }
