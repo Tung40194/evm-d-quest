@@ -47,12 +47,6 @@ interface IQuest {
     /// @param quester The address of the newly added quester.
     event QuesterAdded(address indexed quester);
 
-    /// @notice This event is triggered when Quest is paused.
-    event QuestPaused();
-
-    /// @notice This event is triggered when Quest is resumed.
-    event QuestResumed();
-
     /// SETTER
 
     /// @notice Set the mission node formulas for this quest.
@@ -87,13 +81,15 @@ interface IQuest {
 
     /// @notice Update the quester's progress.
     /// @dev Only the quester can call this function to validate their quests.
+    /// @return isComplete Returns validation result.
     /// This function checks the status of all of the quester's missions and updates the
     /// allQuesterProgresses mapping.
-    function validateQuest() external;
+    function validateQuest() external returns(bool isComplete);
 
     /// @notice Validate a specific mission of caller
     /// @param missionNodeId Mission node ID of inside the missionNodeFormulars
-    function validateMission(uint256 missionNodeId) external;
+    /// @return isComplete Returns validation result.
+    function validateMission(uint256 missionNodeId) external returns(bool isComplete);
 
     /// @notice Execute a defined outcome of the quest.
     /// @dev This function is public and can only be called by anyone.

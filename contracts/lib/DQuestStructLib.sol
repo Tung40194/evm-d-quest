@@ -4,13 +4,11 @@ pragma solidity 0.8.18;
 library DQuestStructLib {
     /// @dev Defines the possible types of operators for a mission node.
     /// States:
-    /// - None = Node is a mission.
     /// - And = All child nodes must evaluate to true for this node to be true.
     /// - Or = At least one child node must evaluate to true for this node to be true.
     enum OperatorType {
-        None,
-        And,
-        Or
+        AND,
+        OR
     }
 
     /// @dev Defines the possible types of Tweet for a Twitter mission.
