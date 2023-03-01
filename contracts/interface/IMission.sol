@@ -5,6 +5,11 @@ import "../lib/DQuestStructLib.sol";
 /// @title An interface for a Mission contract
 /// @notice Mission contract is used to verify certain mission logic
 interface IMission {
+    //TODO just emit enough
+    event MissionValidated(
+        address _quester,
+        DQuestStructLib.MissionNode _node
+    );
     /// @notice validate mission
     /// @param _quester The quester to be validate
     /// @param _node The node that contains information for this mission validation

@@ -29,7 +29,6 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             questerProgresses[msg.sender] != QuesterProgress.NotEnrolled,
             "For questers only"
         );
-
         _;
     }
     
@@ -54,6 +53,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     */
     function init(
         DQuestStructLib.MissionNode[] calldata _nodes,
+        address _oracle,
         uint256 _questStartTime,
         uint256 _questEndTime
     ) internal onlyInitializing {
@@ -61,6 +61,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         __Ownable_init();
         __Pausable_init();
         setMissionNodeFormulas(_nodes);
+        setOracle(_oracle);
         startTimestamp = _questStartTime;
         endTimestamp = _questEndTime;
     }
@@ -70,7 +71,8 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     * Only the contract owner can call this function.
     * @param _oracle The new oracle address.
     */
-    function setOracle(address _oracle) external onlyOwner {
+    function setOracle(address _oracle) public onlyOwner {
+        require(_oracle != address(0x0), "Oracle can't be address 0x0");
         oracle = _oracle;
     }
 
