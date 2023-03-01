@@ -9,5 +9,8 @@ interface IMission {
     /// @param _quester The quester to be validate
     /// @param _node The node that contains information for this mission validation
     /// @return isComplete Returns validation result
-    function validateMission(address _quester, DQuestStructLib.MissionNode calldata _node) external returns (bool isComplete);
+    function validateMission(
+        address _quester,
+        DQuestStructLib.MissionNode calldata _node
+    ) external returns (bool isComplete);
 }

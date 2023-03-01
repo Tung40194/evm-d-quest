@@ -63,11 +63,7 @@ interface IQuest {
     /// @param quester Quester to change mission's status
     /// @param missionNodeId Mission node ID of inside the missionNodeFormulars
     /// @param isMissionDone Status of a quester's mission
-    function setMissionStatus(
-        address quester,
-        uint256 missionNodeId,
-        bool isMissionDone
-    ) external;
+    function setMissionStatus(address quester, uint256 missionNodeId, bool isMissionDone) external;
 
     /// QUEST FUNCTIONS
 
@@ -84,12 +80,12 @@ interface IQuest {
     /// @return isComplete Returns validation result.
     /// This function checks the status of all of the quester's missions and updates the
     /// allQuesterProgresses mapping.
-    function validateQuest() external returns(bool isComplete);
+    function validateQuest() external returns (bool isComplete);
 
     /// @notice Validate a specific mission of caller
     /// @param missionNodeId Mission node ID of inside the missionNodeFormulars
     /// @return isComplete Returns validation result.
-    function validateMission(uint256 missionNodeId) external returns(bool isComplete);
+    function validateMission(uint256 missionNodeId) external returns (bool isComplete);
 
     /// @notice Execute a defined outcome of the quest.
     /// @dev This function is public and can only be called by anyone.
