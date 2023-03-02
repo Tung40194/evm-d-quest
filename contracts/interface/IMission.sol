@@ -6,16 +6,19 @@ import "../lib/DQuestStructLib.sol";
 /// @notice Mission contract is used to verify certain mission logic
 interface IMission {
     //TODO just emit enough
-    event MissionValidated(
-        address _quester,
-        DQuestStructLib.MissionNode _node
-    );
-    /// @notice validate mission
-    /// @param _quester The quester to be validate
-    /// @param _node The node that contains information for this mission validation
-    /// @return isComplete Returns validation result
+    event MissionValidated(address quester, DQuestStructLib.MissionNode node);
+
+    /**
+     * @dev Validates the mission submitted.
+     * @notice caller must be one of d.quest's quest contracts
+     * @notice Must update quest's questerMissionsDone via e.g. setMissionStatus()
+     * for on-chain missions. For off-chain missions, it can be done via fulfill() method.
+     * @param quester The address of the quester submitting the mission.
+     * @param node The mission to be validated.
+     * @return isComplete Returns validation result
+     */
     function validateMission(
-        address _quester,
-        DQuestStructLib.MissionNode calldata _node
+        address quester,
+        DQuestStructLib.MissionNode calldata node
     ) external returns (bool isComplete);
 }

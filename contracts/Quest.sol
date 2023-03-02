@@ -9,7 +9,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable {
-    address public oracle; // todo: single or many oracles for dquest?
+    address public dQuestOracle; // todo: single or many oracles for dquest?
     DQuestStructLib.MissionNode[] missionNodeFormulas;
     address[] allQuesters;
     mapping(address quester =>  QuesterProgress progress) questerProgresses;
@@ -19,7 +19,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     QuestStatus public status;
 
     modifier onlyOracle() {
-        require(msg.sender == oracle, "For oracle only");
+        require(msg.sender == dQuestOracle, "For oracle only");
         _;
     }
 
@@ -42,90 +42,61 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     //     _;
     // }
 
+    // prettier-ignore
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
     /**
     * @dev Initializes the contract with the specified mission nodes and quest start/end times.
     * @notice This function can only be called during the initialization phase of the contract.
     * @notice Check docstrings of setMissionNodeFormulas carefully
-    * @param _nodes The array of mission nodes to set.
-    * @param _questStartTime The timestamp at which the quest starts.
-    * @param _questEndTime The timestamp at which the quest ends.
+    * @param nodes The array of mission nodes to set.
+    * @param questStartTime The timestamp at which the quest starts.
+    * @param questEndTime The timestamp at which the quest ends.
     * Emits a `MissionNodeFormulasSet` event.
     */
     function init(
-        DQuestStructLib.MissionNode[] calldata _nodes,
-        address _oracle,
-        uint256 _questStartTime,
-        uint256 _questEndTime
+        DQuestStructLib.MissionNode[] calldata nodes,
+        DQuestStructLib.Outcome[] calldata outcomes,
+        address oracle,
+        uint256 questStartTime,
+        uint256 questEndTime
     ) internal onlyInitializing {
         //TODO check carefully
         __Ownable_init();
         __Pausable_init();
-        setMissionNodeFormulas(_nodes);
-        setOracle(_oracle);
-        startTimestamp = _questStartTime;
-        endTimestamp = _questEndTime;
+        setMissionNodeFormulas(nodes);
+        setOutcomes(outcomes);
+        setOracle(oracle);
+        startTimestamp = questStartTime;
+        endTimestamp = questEndTime;
     }
 
-    /**
-    * @dev Sets the oracle address for the contract.
-    * Only the contract owner can call this function.
-    * @param _oracle The new oracle address.
-    */
-    function setOracle(address _oracle) public onlyOwner {
-        require(_oracle != address(0x0), "Oracle can't be address 0x0");
-        oracle = _oracle;
+    function setOracle(address oracle) public override onlyOwner {
+        require(oracle != address(0x0), "Oracle can't be address 0x0");
+        dQuestOracle = oracle;
     }
 
-    /**
-     * @dev Sets the formulas for the mission nodes.
-     * @notice Only the contract owner can call this function.
-     * @param _nodes The array of mission nodes to set.
-     * Emits a `MissionNodeFormulasSet` event.
-     * Warning: wrong order in the input array can fail the entire formula
-     * For example given a formula: ((M1 AND M2 AND M3) OR (M4 AND M1))
-     * We have the following tree:
-     *                             OR(0)
-     *                           /        `
-     *                          /            `
-     *                         /                `
-     *                     AND(1)                  `AND(2)
-     *                    /      `                 /      `
-     *                   /         `              /         `
-     *               AND(3)          `M3(4)     M4(5)         `M1(6)
-     *              /    `
-     *             /       `
-     *           M1(7)       `M2(8)
-     *
-     * The numbers in the parentheses are the indexes of the nodes and each
-     * node should be added to the tree in that exact order (0->1->2-> ...)
-     * otherwise the entire formula can fail.
-     * A correct orderredly constructed array should be: [node0, node1, node2, ... node8]
-    */
-    function setMissionNodeFormulas(DQuestStructLib.MissionNode[] calldata _nodes)
+    function setMissionNodeFormulas(DQuestStructLib.MissionNode[] calldata nodes)
         public
         override
         onlyOwner
     {
-        require(_nodes.length > 0, "Empty node list");
+        require(nodes.length > 0, "Empty node list");
         // TODO: Validation of input mission nodes?
-        for (uint i = 0; i < _nodes.length; i++) {
-            missionNodeFormulas[i] = _nodes[i];
+        for (uint i = 0; i < nodes.length; i++) {
+            missionNodeFormulas[i] = nodes[i];
         }
-        emit MissionNodeFormulasSet(_nodes);
+        emit MissionNodeFormulasSet(nodes);
     }
 
-    /**
-    * @dev Sets the status of a mission for a specific quester.
-    * Only the oracle can call this function.
-    * @param quester The address of the quester.
-    * @param missionNodeId The ID of the mission node.
-    * @param isMissionDone The status of the mission.
-    */
     function setMissionStatus(
         address quester,
         uint256 missionNodeId,
         bool isMissionDone
-    ) external onlyOracle {
+    ) public onlyOracle {
         questerMissionsDone[quester][missionNodeId] = isMissionDone;
     }
 
@@ -140,8 +111,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     ) private returns (bool) {
         DQuestStructLib.MissionNode memory node = missionNodeFormulas[nodeId];
         if (node.isMission) {
-            IMission mission = IMission(node.missionHandlerAddress);
-            return mission.validateMission(user, node);
+            return validateMission(nodeId);
         } else {
             bool leftResult = evalMF(node.leftNode, user);
             bool rightResult = evalMF(node.rightNode, user);
@@ -153,47 +123,29 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         }
     }
 
-    /**
-     * @dev A function to evaluate the tree for a user
-     */
     function validateQuest() external override onlyQuester whenNotPaused returns (bool) {
         return evalMF(0, msg.sender);
     }
 
-    /**
-    * @dev Validates a mission for the given mission node ID.
-    * @param _missionNodeId The ID of the mission node to validate.
-    * Emits a `MissionValidated` event.
-    */
-    function validateMission(uint256 _missionNodeId) external override onlyQuester whenNotPaused returns(bool) {
-        DQuestStructLib.MissionNode memory node = missionNodeFormulas[_missionNodeId];
-        IMission mission = IMission(node.missionHandlerAddress);
-        return mission.validateMission(msg.sender, node);
+    function validateMission(uint256 missionNodeId) public override onlyQuester whenNotPaused returns(bool) {
+        bool cache = questerMissionsDone[msg.sender][missionNodeId];
+        // if false, proceed validation at mission handler contract
+        if (cache == false) {
+            DQuestStructLib.MissionNode memory node = missionNodeFormulas[missionNodeId];
+            IMission mission = IMission(node.missionHandlerAddress);
+            return mission.validateMission(msg.sender, node);
+        }
+        return cache;
     }
 
-    /**
-    * @dev Pauses the quest.
-    * Only the contract owner can call this function.
-    * Emits a `Paused` event.
-    */
     function pauseQuest() external override onlyOwner {
         _pause();
     }
 
-    /**
-    * @dev Resumes the quest.
-    * Only the contract owner can call this function.
-    * Emits a `Unpaused` event.
-    */
     function resumeQuest() external override onlyOwner {
         _unpause();
     }
 
-    /**
-    * @dev Adds a new quester to the list of all questers.
-    * Only callable when the contract is active.
-    * Emits a `QuesterAdded` event.
-    */
     function addQuester() external override whenActive {
         require(questerProgresses[msg.sender] == QuesterProgress.NotEnrolled, "Quester already joined");
         allQuesters.push(msg.sender);
@@ -201,10 +153,6 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         emit QuesterAdded(msg.sender);
     }
 
-    /**
-    * @dev Returns the total number of questers.
-    * @return totalQuesters total number of questers.
-    */
     function getTotalQuesters() external view override returns (uint256 totalQuesters) {
         return allQuesters.length;
     }
@@ -214,7 +162,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     * Only the contract owner can call this function.
     * @param _outcomes The list of possible outcomes to set.
     */
-    function setOutcomes(DQuestStructLib.Outcome[] calldata _outcomes) external override onlyOwner {
+    function setOutcomes(DQuestStructLib.Outcome[] calldata _outcomes) public override onlyOwner {
         // TODO
     }
 
