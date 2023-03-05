@@ -2,6 +2,7 @@
 pragma solidity 0.8.18;
 
 import "./lib/DQuestStructLib.sol";
+import "./lib/MissionFormula.sol";
 import "./interface/IQuest.sol";
 import "./interface/IMission.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -9,8 +10,10 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable {
+    using MissionFormula for MissionFormula.efficientlyResetableFormula;
+
     address public dQuestOracle; // todo: single or many oracles for dquest?
-    DQuestStructLib.MissionNode[] missionNodeFormulas;
+    MissionFormula.efficientlyResetableFormula missionNodeFormulas;
     address[] allQuesters;
     mapping(address quester =>  QuesterProgress progress) questerProgresses;
     mapping(address quester => mapping(uint256 missionNodeId => bool isDone)) questerMissionsDone;
@@ -86,9 +89,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     {
         require(nodes.length > 0, "Empty node list");
         // TODO: Validation of input mission nodes?
-        for (uint i = 0; i < nodes.length; i++) {
-            missionNodeFormulas[i] = nodes[i];
-        }
+        missionNodeFormulas._set(nodes);
         emit MissionNodeFormulasSet(nodes);
     }
 
@@ -109,7 +110,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         uint256 nodeId,
         address user
     ) private returns (bool) {
-        DQuestStructLib.MissionNode memory node = missionNodeFormulas[nodeId];
+        DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(nodeId);
         if (node.isMission) {
             return validateMission(nodeId);
         } else {
@@ -131,7 +132,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         bool cache = questerMissionsDone[msg.sender][missionNodeId];
         // if false, proceed validation at mission handler contract
         if (cache == false) {
-            DQuestStructLib.MissionNode memory node = missionNodeFormulas[missionNodeId];
+            DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
             IMission mission = IMission(node.missionHandlerAddress);
             return mission.validateMission(msg.sender, node);
         }
