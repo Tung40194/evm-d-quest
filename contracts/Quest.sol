@@ -34,16 +34,34 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         );
         _;
     }
+
+    modifier questerNotEnrolled() {
+        require(
+            questerProgresses[msg.sender] == QuesterProgress.NotEnrolled,
+            "Quester already joined"
+        );
+        _;
+    }
     
-    modifier whenActive() {
-        require(status == QuestStatus.Active, "Quest is not Active");
+    // when quest is inactive
+    modifier whenInactive() {
+        require(block.timestamp < startTimestamp, "Quest has started");
         _;
     }
 
-    // modifier whenClosed() {
-    //     require(status != QuestStatus.Closed, "Quest is paused/closed.");
-    //     _;
-    // }
+    // when quest is active
+    modifier whenActive() {
+        //require(status == QuestStatus.Active, "Quest is not Active");
+        require(startTimestamp <= block.timestamp && block.timestamp <= endTimestamp, "Quest is not Active");
+        _;
+    }
+
+    // when quest is closed/expired
+    modifier whenClosed() {
+        //require(status != QuestStatus.Closed, "Quest is expired");
+        require(block.timestamp > endTimestamp, "Quest is expired");
+        _;
+    }
 
     // prettier-ignore
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -68,6 +86,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         uint256 questEndTime
     ) internal onlyInitializing {
         //TODO check carefully
+        require(questStartTime < questEndTime, "Invalid quest lifetime");
         __Ownable_init();
         __Pausable_init();
         setMissionNodeFormulas(nodes);
@@ -86,6 +105,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         public
         override
         onlyOwner
+        whenInactive
     {
         require(nodes.length > 0, "Empty node list");
         // TODO: Validation of input mission nodes?
@@ -151,8 +171,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         _unpause();
     }
 
-    function addQuester() external override whenActive {
-        require(questerProgresses[msg.sender] == QuesterProgress.NotEnrolled, "Quester already joined");
+    function addQuester() external override whenActive questerNotEnrolled {
         allQuesters.push(msg.sender);
         questerProgresses[msg.sender] = QuesterProgress.InProgress;
         emit QuesterAdded(msg.sender);
