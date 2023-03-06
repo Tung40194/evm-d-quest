@@ -5,16 +5,6 @@ import "../lib/DQuestStructLib.sol";
 /// @title An interface for a Quest contract
 /// @notice Quest contract is use to manage Questers, Missions and Outcomes
 interface IQuest {
-    /// @dev Possible states of a Quest
-    /// States:
-    /// - NotStarted = The quest has not yet started.
-    /// - Active = The quest is currently ongoing, between its start and end times.
-    /// - Closed = The quest has expired.
-    enum QuestStatus {
-        NotStarted,
-        Active,
-        Closed
-    }
 
     /// @dev Defines the possible states of a quester's status to current quest.
     /// States:

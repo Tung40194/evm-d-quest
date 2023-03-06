@@ -10,7 +10,7 @@ interface IMission {
 
     /**
      * @dev Validates the mission submitted.
-     * @notice caller must be one of d.quest's quest contracts
+     * @notice caller MUST be one of d.quest's quest contracts
      * @notice Must update quest's questerMissionsDone via e.g. setMissionStatus()
      * for on-chain missions. For off-chain missions, it can be done via fulfill() method.
      * @param quester The address of the quester submitting the mission.
