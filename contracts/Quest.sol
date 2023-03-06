@@ -98,6 +98,8 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         uint256 missionNodeId,
         bool isMissionDone
     ) public onlyOracle {
+        // TODO quester must be a quester
+        // TOTO missionNodeId must be valid
         questerMissionsDone[quester][missionNodeId] = isMissionDone;
     }
 
@@ -110,6 +112,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         uint256 nodeId,
         address user
     ) private returns (bool) {
+        //TODO validate the binary tree's depth
         DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(nodeId);
         if (node.isMission) {
             return validateMission(nodeId);
@@ -134,6 +137,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         if (cache == false) {
             DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
             IMission mission = IMission(node.missionHandlerAddress);
+            // subsequent call at this trigger will update back the cache
             return mission.validateMission(msg.sender, node);
         }
         return cache;
