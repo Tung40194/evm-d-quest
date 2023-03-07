@@ -6,6 +6,7 @@ import "../lib/DQuestStructLib.sol";
 /// @notice Mission contract is used to verify certain mission logic
 interface IMission {
     //TODO just emit enough
+    //     mapping(address quester => mapping(uint256 missionNodeId => bool isDone)) questerMissionsDone;
     event MissionValidated(address quester, DQuestStructLib.MissionNode node);
 
     /**
