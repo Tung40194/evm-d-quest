@@ -16,13 +16,9 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     MissionFormula.efficientlyResetableFormula missionNodeFormulas;
     address[] allQuesters;
     mapping(address quester =>  QuesterProgress progress) questerProgresses;
+    mapping(address quester => mapping(uint256 missionNodeId => bool isDone)) questerMissionsDone;
     uint256 startTimestamp;
     uint256 endTimestamp;
-
-    modifier onlyOracle() {
-        require(msg.sender == dQuestOracle, "For oracle only");
-        _;
-    }
 
     // TODO: check allQuesters's role
     modifier onlyQuester() {
@@ -79,7 +75,6 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     function init(
         DQuestStructLib.MissionNode[] calldata nodes,
         DQuestStructLib.Outcome[] calldata outcomes,
-        address oracle,
         uint256 questStartTime,
         uint256 questEndTime
     ) internal onlyInitializing {
@@ -89,14 +84,22 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         __Pausable_init();
         setMissionNodeFormulas(nodes);
         setOutcomes(outcomes);
-        setOracle(oracle);
         startTimestamp = questStartTime;
         endTimestamp = questEndTime;
     }
 
-    function setOracle(address oracle) public override onlyOwner {
-        require(oracle != address(0x0), "Oracle can't be address 0x0");
-        dQuestOracle = oracle;
+    function setMissionStatus(
+        address quester,
+        uint256 missionNodeId,
+        bool isMissionDone
+    ) public {
+        DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
+        require(
+            msg.sender == node.missionHandlerAddress || msg.sender == node.oracleAddress,
+            "Can not update cross-mission states"
+        );
+        require(questerProgresses[quester] != QuesterProgress.NotEnrolled, "Not a quester");
+        questerMissionsDone[quester][missionNodeId] = isMissionDone;
     }
 
     function setMissionNodeFormulas(DQuestStructLib.MissionNode[] calldata nodes)
@@ -148,8 +151,15 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     function validateMission(uint256 missionNodeId) public override onlyQuester whenNotPaused returns(bool) {
         DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(node.isMission == true, "Not a mission");
-        IMission mission = IMission(node.missionHandlerAddress);
-        return mission.validateMission(msg.sender, node);
+        bool cache = questerMissionsDone[msg.sender][missionNodeId];
+        // if false, proceed validation at mission handler contract
+        if (cache == false) {
+            IMission mission = IMission(node.missionHandlerAddress);
+            // subsequent call at this trigger will update back the cache
+            return mission.validateMission(msg.sender, node);
+        }
+        return cache;
+
     }
 
     function pauseQuest() external override onlyOwner {
