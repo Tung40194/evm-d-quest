@@ -75,7 +75,6 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     function init(
         DQuestStructLib.MissionNode[] calldata nodes,
         DQuestStructLib.Outcome[] calldata outcomes,
-        address oracle,
         uint256 questStartTime,
         uint256 questEndTime
     ) internal onlyInitializing {
