@@ -16,6 +16,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     MissionFormula.efficientlyResetableFormula missionNodeFormulas;
     address[] allQuesters;
     mapping(address quester =>  QuesterProgress progress) questerProgresses;
+    mapping(address quester => mapping(uint256 missionNodeId => bool isDone)) questerMissionsDone;
     uint256 startTimestamp;
     uint256 endTimestamp;
 
@@ -99,6 +100,16 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         dQuestOracle = oracle;
     }
 
+    function setMissionStatus(
+        address quester,
+        uint256 missionNodeId,
+        bool isMissionDone
+    ) public onlyOracle {
+        // TODO quester must be a quester
+        // TOTO missionNodeId must be valid
+        questerMissionsDone[quester][missionNodeId] = isMissionDone;
+    }
+
     function setMissionNodeFormulas(DQuestStructLib.MissionNode[] calldata nodes)
         public
         override
@@ -148,8 +159,15 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     function validateMission(uint256 missionNodeId) public override onlyQuester whenNotPaused returns(bool) {
         DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(node.isMission == true, "Not a mission");
-        IMission mission = IMission(node.missionHandlerAddress);
-        return mission.validateMission(msg.sender, node);
+        bool cache = questerMissionsDone[msg.sender][missionNodeId];
+        // if false, proceed validation at mission handler contract
+        if (cache == false) {
+            IMission mission = IMission(node.missionHandlerAddress);
+            // subsequent call at this trigger will update back the cache
+            return mission.validateMission(msg.sender, node);
+        }
+        return cache;
+
     }
 
     function pauseQuest() external override onlyOwner {

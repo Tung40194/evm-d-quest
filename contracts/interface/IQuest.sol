@@ -79,6 +79,15 @@ interface IQuest {
     function setOutcomes(DQuestStructLib.Outcome[] calldata outcomes) external;
 
     /// QUEST FUNCTIONS
+    
+    /**
+     * @dev Sets the status of a mission for a specific quester.
+     * Only dquest oracle can call this function.
+     * @param quester The address of the quester.
+     * @param missionNodeId The ID of the mission node.
+     * @param isMissionDone The status of the mission.
+     */
+    function setMissionStatus(address quester, uint256 missionNodeId, bool isMissionDone) external;
 
     /**
      * @dev Pauses the quest.
