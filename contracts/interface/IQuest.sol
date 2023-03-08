@@ -5,16 +5,6 @@ import "../lib/DQuestStructLib.sol";
 /// @title An interface for a Quest contract
 /// @notice Quest contract is use to manage Questers, Missions and Outcomes
 interface IQuest {
-    /// @dev Possible states of a Quest
-    /// States:
-    /// - NotStarted = The quest has not yet started.
-    /// - Active = The quest is currently ongoing, between its start and end times.
-    /// - Closed = The quest has expired.
-    enum QuestStatus {
-        NotStarted,
-        Active,
-        Closed
-    }
 
     /// @dev Defines the possible states of a quester's status to current quest.
     /// States:
@@ -47,53 +37,76 @@ interface IQuest {
     /// @param quester The address of the newly added quester.
     event QuesterAdded(address indexed quester);
 
-    /// @notice This event is triggered when Quest is paused.
-    event QuestPaused();
-
-    /// @notice This event is triggered when Quest is resumed.
-    event QuestResumed();
-
     /// SETTER
 
-    /// @notice Set the mission node formulas for this quest.
-    /// @dev The input array must follow the AND/OR tree rule, or the function will revert.
-    /// @param missionFormulas An array of MissionNode structs.
-    function setMissionNodeFormulas(DQuestStructLib.MissionNode[] calldata missionFormulas) external;
+    /**
+     * @dev Sets the oracle address for the contract.
+     * Only the contract owner can call this function.
+     * @param oracle The new oracle address.
+     */
+    function setOracle(address oracle) external;
+
+    /**
+     * @dev Sets the formulas for the mission nodes.
+     * @notice Only the contract owner can call this function.
+     * @param nodes The array of mission nodes to set.
+     * Emits a `MissionNodeFormulasSet` event.
+     * Warning: wrong order in the input array can fail the entire formula
+     * For example given a formula: ((M1 AND M2 AND M3) OR (M4 AND M1))
+     * We have the following tree:
+     *                             OR(0)
+     *                           /        `
+     *                          /            `
+     *                         /                `
+     *                     AND(1)                  `AND(2)
+     *                    /      `                 /      `
+     *                   /         `              /         `
+     *               AND(3)          `M3(4)     M4(5)         `M1(6)
+     *              /    `
+     *             /       `
+     *           M1(7)       `M2(8)
+     *
+     * The numbers in the parentheses are the indexes of the nodes and each
+     * node should be added to the tree in that exact order (0->1->2-> ...)
+     * otherwise the entire formula can fail.
+     * A correct orderredly constructed array should be: [node0, node1, node2, ... node8]
+     * The indexes of leftNode and rightNode as seen in the tree above. If none, filled with zero(0).
+     */
+    function setMissionNodeFormulas(DQuestStructLib.MissionNode[] calldata nodes) external;
 
     /// @notice Set the outcomes for this quest.
     /// @param outcomes An array of Outcome structs.
     function setOutcomes(DQuestStructLib.Outcome[] calldata outcomes) external;
 
-    /// @notice Change status of quester's mission
-    /// @dev Only Oracles able to set mission status
-    /// @param quester Quester to change mission's status
-    /// @param missionNodeId Mission node ID of inside the missionNodeFormulars
-    /// @param isMissionDone Status of a quester's mission
-    function setMissionStatus(
-        address quester,
-        uint256 missionNodeId,
-        bool isMissionDone
-    ) external;
-
     /// QUEST FUNCTIONS
 
-    /// @notice Pauses the Quest
-    /// @dev Only the owner of the Quest can call this function. Also requires that the QuestStatus is Active.
+    /**
+     * @dev Pauses the quest.
+     * Only the contract owner can call this function.
+     * Emits a `Paused` event.
+     */
     function pauseQuest() external;
 
-    /// @notice Resume the Quest
-    /// @dev Only the owner of the Quest can call this function. Also requires that the QuestStatus is Active.
+    /**
+     * @dev Resumes the quest.
+     * Only the contract owner can call this function.
+     * Emits a `Unpaused` event.
+     */
     function resumeQuest() external;
 
-    /// @notice Update the quester's progress.
-    /// @dev Only the quester can call this function to validate their quests.
-    /// This function checks the status of all of the quester's missions and updates the
-    /// allQuesterProgresses mapping.
-    function validateQuest() external;
+    /**
+     * @dev A function to evaluate the tree for a user
+     * @return isComplete Returns validation result.
+     */
+    function validateQuest() external returns (bool isComplete);
 
-    /// @notice Validate a specific mission of caller
-    /// @param missionNodeId Mission node ID of inside the missionNodeFormulars
-    function validateMission(uint256 missionNodeId) external;
+    /**
+     * @dev Validates a mission for the given mission node ID.
+     * @param missionNodeId MUST be the id of mission node (isMission == true).
+     * @return isComplete Returns validation result.
+     * Emits a `MissionValidated` event.
+     */
+    function validateMission(uint256 missionNodeId) external returns (bool isComplete);
 
     /// @notice Execute a defined outcome of the quest.
     /// @dev This function is public and can only be called by anyone.
@@ -105,11 +118,16 @@ interface IQuest {
 
     /// QUESTER FUNCTIONS
 
-    /// @notice Add the caller to the quest as a quester.
-    /// @dev This function adds `msg.sender` to the `allQuesters` array.
+    /**
+     * @dev Adds a new quester to the list of all questers.
+     * Only callable when the contract is active.
+     * Emits a `QuesterAdded` event.
+     */
     function addQuester() external;
 
-    /// @notice Get the total number of questers who have joined the current quest.
-    /// @return totalQuesters Returns the number of questers in the quest.
+    /**
+     * @dev Returns the total number of questers.
+     * @return totalQuesters total number of questers.
+     */
     function getTotalQuesters() external view returns (uint256 totalQuesters);
 }
