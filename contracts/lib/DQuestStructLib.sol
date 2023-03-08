@@ -28,6 +28,7 @@ library DQuestStructLib {
     /// @param id The index of the node in the array of missionNodeFormula.
     /// @param isMission Is the node a mission or an operator
     /// @param missionHandlerAddress The address of MissionHandler contract to validate the mission with given parameters, equals 0x0 if isMission = false
+    /// @param oracleAddress The address of the oracle for the mission handler (off chain mission handler)
     /// @param operatorType The operator type = And/Or if isMission = false
     /// @param leftNode Left side node of this Node
     /// @param rightNode Right side node of this Node
@@ -36,6 +37,7 @@ library DQuestStructLib {
         uint256 id;
         bool isMission;
         address missionHandlerAddress;
+        address oracleAddress;
         OperatorType operatorType;
         uint256 leftNode;
         uint256 rightNode;

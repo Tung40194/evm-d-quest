@@ -104,9 +104,13 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         address quester,
         uint256 missionNodeId,
         bool isMissionDone
-    ) public onlyOracle {
-        // TODO quester must be a quester
-        // TOTO missionNodeId must be valid
+    ) public {
+        DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
+        require(
+            msg.sender == node.missionHandlerAddress || msg.sender == node.oracleAddress,
+            "Can not update cross-mission states"
+        );
+        require(questerProgresses[quester] != QuesterProgress.NotEnrolled, "Not a quester");
         questerMissionsDone[quester][missionNodeId] = isMissionDone;
     }
 
