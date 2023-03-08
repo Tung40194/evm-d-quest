@@ -9,11 +9,6 @@ interface IMission {
     event MissionValidated(address quester, DQuestStructLib.MissionNode node);
 
     /**
-     * mapping(address quester => mapping(uint256 missionNodeId => bool isDone)) questerMissionsDone;
-     * a recommended data structure to manage mission status
-     */
-
-    /**
      * @dev Validates the mission submitted.
      * @notice caller MUST belong to d.quest's quest contracts
      * @param quester The address of the quester submitting the mission.
