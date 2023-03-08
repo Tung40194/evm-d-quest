@@ -40,13 +40,6 @@ interface IQuest {
     /// SETTER
 
     /**
-     * @dev Sets the oracle address for the contract.
-     * Only the contract owner can call this function.
-     * @param oracle The new oracle address.
-     */
-    function setOracle(address oracle) external;
-
-    /**
      * @dev Sets the formulas for the mission nodes.
      * @notice Only the contract owner can call this function.
      * @param nodes The array of mission nodes to set.

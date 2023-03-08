@@ -20,11 +20,6 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     uint256 startTimestamp;
     uint256 endTimestamp;
 
-    modifier onlyOracle() {
-        require(msg.sender == dQuestOracle, "For oracle only");
-        _;
-    }
-
     // TODO: check allQuesters's role
     modifier onlyQuester() {
         require(
@@ -90,14 +85,8 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         __Pausable_init();
         setMissionNodeFormulas(nodes);
         setOutcomes(outcomes);
-        setOracle(oracle);
         startTimestamp = questStartTime;
         endTimestamp = questEndTime;
-    }
-
-    function setOracle(address oracle) public override onlyOwner {
-        require(oracle != address(0x0), "Oracle can't be address 0x0");
-        dQuestOracle = oracle;
     }
 
     function setMissionStatus(
