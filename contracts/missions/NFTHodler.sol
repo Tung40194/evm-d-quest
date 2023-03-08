@@ -5,6 +5,7 @@ import "../lib/DQuestStructLib.sol";
 import "../lib/BytesConversion.sol";
 import "../interface/IMission.sol";
 import "../interface/IQuest.sol";
+import "../interface/IDQuest.sol"; //TODO check d.quest
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -21,20 +22,28 @@ contract NFThodler is IMission, Ownable {
 
     Range public NFTrange;
 
-    constructor() {
-        // nothing yet
+    constructor(address dQuest) {
+        require(dQuest != address(0x0), "can't be 0x0");
+        dquestContract = dQuest;
     }
 
-    // function setDquestAddress(address dQuest) external onlyOwner {
-    //     require(dQuest != address(0x0), "can't be 0x0");
-    //     dquestContract = dQuest;
-    // }
+    //TODO improve when quests number increases
+    function isAQuest(address input) private view returns(bool) {
+        IDQuest dquest = IDQuest(dquestContract);
+        address[] memory quests = dquest.getAllQuests();
+        for (uint256 index = 0; index < quests.length; index ++) {
+            if (input == quests[index])
+                return true;
+        }
+        return false;
+    }
 
     function validateMission(
         address quester,
         DQuestStructLib.MissionNode calldata node
     ) external returns (bool isComplete) {
         //TODO ensure only quest contracts calling
+        require(isAQuest(msg.sender), "Caller is not a quest");
         IQuest quest = IQuest(msg.sender);
 
         tokenAddr = node.data[0].toAddress();
