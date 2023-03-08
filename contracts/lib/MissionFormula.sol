@@ -58,7 +58,7 @@ library MissionFormula {
     /**
      * @dev Returns the mission node with the given id from the given formula.
      * @param f Formula to get mission node from.
-     * @param nodeId Id of the mission node to get.
+     * @param nodeId Id of the mission node to get. Must exist.
      * @return Mission node with the given id.
      */
     function _getNode(
