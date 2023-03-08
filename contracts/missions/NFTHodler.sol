@@ -38,6 +38,10 @@ contract NFThodler is IMission, Ownable {
         return false;
     }
 
+    /**
+     * To meet mission formula setup from Quest, decode MissionNode.data with the following schema
+     * data schema: (address token_address, uint256 start_id, uint256 stop_id)
+    */
     function validateMission(
         address quester,
         DQuestStructLib.MissionNode calldata node
@@ -46,9 +50,11 @@ contract NFThodler is IMission, Ownable {
         require(isAQuest(msg.sender), "Caller is not a quest");
         IQuest quest = IQuest(msg.sender);
 
+        // start decoding node.data
         tokenAddr = node.data[0].toAddress();
         NFTrange.start = node.data[1].toUint256();
         NFTrange.stop = node.data[2].toUint256();
+
         IERC721 tokenContract = IERC721(tokenAddr);
 
         for (uint256 index = NFTrange.start; index <= NFTrange.stop; index++) {
