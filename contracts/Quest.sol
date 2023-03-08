@@ -142,7 +142,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         } else {
             questerProgresses[msg.sender] = QuesterProgress.InProgress;
         }
-        return evalMF(0, msg.sender);
+        return result;
     }
 
     function validateMission(uint256 missionNodeId) public override onlyQuester whenNotPaused returns(bool) {
