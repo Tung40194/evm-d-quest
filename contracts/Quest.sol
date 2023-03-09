@@ -141,8 +141,6 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         bool result = evalMF(0, msg.sender);
         if (result == true) {
             questerProgresses[msg.sender] = QuesterProgress.Completed;
-        } else {
-            questerProgresses[msg.sender] = QuesterProgress.InProgress;
         }
         return result;
     }
