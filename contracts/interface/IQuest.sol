@@ -37,6 +37,11 @@ interface IQuest {
     /// @param quester The address of the newly added quester.
     event QuesterAdded(address indexed quester);
 
+    /// @notice This event is triggered when native coin is transfered to Quest contract
+    /// @param address The address of sender.
+    /// @param uint The total amount of native coin reward.
+    event Received(address, uint);
+
     /// SETTER
 
     /**
@@ -116,7 +121,7 @@ interface IQuest {
     /// @param quester The quester who wants to receive the quest's outcome.
     /// @return executeSuccess Returns `true` if the outcome is executed successfully.
     /// Returns `false` if the execution fails or the quest is closed.
-    function executeQuestOutcome(address quester) external returns (bool executeSuccess);
+    function executeQuestOutcome(address quester) external payable returns (bool executeSuccess);
 
     /// QUESTER FUNCTIONS
 
