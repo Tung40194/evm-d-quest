@@ -14,6 +14,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
 
     address public dQuestOracle; // todo: single or many oracles for dquest?
     MissionFormula.efficientlyResetableFormula missionNodeFormulas;
+    DQuestStructLib.Outcome[] public outcomes; // the outcomes for the quest
     address[] allQuesters;
     mapping(address quester =>  QuesterProgress progress) questerProgresses;
     mapping(address quester => mapping(uint256 missionNodeId => bool isDone)) questerMissionsDone;
@@ -195,7 +196,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         require(_outcomes.length > 0, "No outcomes provided");
         
         for (uint256 i = 0; i < _outcomes.length; i++) {
-            require(_outcomes[i].outcomeAddress != address(0), "Outcome address is invalid");
+            require(_outcomes[i].tokenAddress != address(0), "Outcome address is invalid");
             require(_outcomes[i].functionSelector != 0, "functionSelector can't be empty");
             require(
                 keccak256(abi.encodePacked(_outcomes[i].data)) != keccak256(abi.encodePacked("")),
@@ -230,7 +231,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             if (outcomes[i].functionSelector == 0x699a0077) {
                 _executeNFTStandardOutcome(_quester, outcomes[i]);
             }
-            if (_outcomes[i].functionSelector == 0 && outcomes[i].nativeAmount != 0) {
+            if (outcomes[i].functionSelector == 0 && outcomes[i].nativeAmount != 0) {
                 _executeNativeOutcome(_quester, outcomes[i]);
             }
         }
@@ -249,7 +250,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             value := mload(add(outcome, 100))
         }
 
-        (bool success, bytes memory response) = outcome.outcomeAddress.call(
+        (bool success, bytes memory response) = outcome.tokenAddress.call(
             abi.encodeWithSelector(SELECTOR_TRANSFERFROM, spender, _quester, value)
         );
 
@@ -276,7 +277,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             tokenId := mload(add(outcome, 100))
         }
 
-        (bool success, bytes memory response) = outcome.outcomeAddress.call(
+        (bool success, bytes memory response) = outcome.tokenAddress.call(
             abi.encodeWithSelector(SELECTOR_SAFETRANSFERFROM, spender, _quester, tokenId)
         );
         require(success, string(response));
@@ -303,7 +304,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             amount := mload(add(outcome, 228))
         }
 
-        (bool success, bytes memory response) = outcome.outcomeAddress.call(
+        (bool success, bytes memory response) = outcome.tokenAddress.call(
             abi.encodeWithSelector(
                 SELECTOR_NFTSTANDARDMINT,
                 mintingConditionId,
@@ -328,18 +329,18 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             expiration := mload(add(outcome, 196))
         }
 
-        (bool success, bytes memory response) = outcome.outcomeAddress.call(
+        (bool success, bytes memory response) = outcome.tokenAddress.call(
             abi.encodeWithSelector(SELECTOR_SBTMINT, quester, expiration)
         );
 
         require(success, string(response));
     }
 
-    function _executeNativeOutcome(address payable _quester, DQuestStructLib.Outcome memory outcome)
+    function _executeNativeOutcome(address _quester, DQuestStructLib.Outcome memory outcome)
         internal
     {
-        (bool sent, bytes memory data) = _quester.call{value: outcome.nativeAmount}("");
-        require(sent, "Failed to reward native coin to Quester");
+        (bool sent, bytes memory data) = payable(_quester).call{value: outcome.nativeAmount}("");
+        require(sent, string(data));
     }
 
     receive() external payable {

@@ -5,7 +5,6 @@ import "../lib/DQuestStructLib.sol";
 /// @title An interface for a Quest contract
 /// @notice Quest contract is use to manage Questers, Missions and Outcomes
 interface IQuest {
-
     /// @dev Defines the possible states of a quester's status to current quest.
     /// States:
     /// - NotEnrolled = The quester hasn't joined the quest.
@@ -38,9 +37,9 @@ interface IQuest {
     event QuesterAdded(address indexed quester);
 
     /// @notice This event is triggered when native coin is transfered to Quest contract
-    /// @param address The address of sender.
-    /// @param uint The total amount of native coin reward.
-    event Received(address, uint);
+    /// @param sender The address of sender.
+    /// @param amount The total amount of native coin reward.
+    event Received(address indexed sender, uint indexed amount);
 
     /// SETTER
 
@@ -77,7 +76,7 @@ interface IQuest {
     function setOutcomes(DQuestStructLib.Outcome[] calldata outcomes) external;
 
     /// QUEST FUNCTIONS
-    
+
     /**
      * @dev Sets the status of a mission for a specific quester.
      * Only dquest oracle can call this function.
