@@ -4,6 +4,7 @@ import "../lib/DQuestStructLib.sol";
 
 /// @title An interface for a Mission contract
 /// @notice Mission contract is used to verify certain mission logic and cache mission status
+/// @notice MUST define data schema to decode object node.data in validateMission() method
 interface IMission {
     //TODO just emit enough
     event MissionValidated(address quester, DQuestStructLib.MissionNode node);
