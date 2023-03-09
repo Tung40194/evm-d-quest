@@ -12,7 +12,6 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable {
     using MissionFormula for MissionFormula.efficientlyResetableFormula;
 
-    address public dQuestOracle; // todo: single or many oracles for dquest?
     MissionFormula.efficientlyResetableFormula missionNodeFormulas;
     address[] allQuesters;
     mapping(address quester =>  QuesterProgress progress) questerProgresses;
