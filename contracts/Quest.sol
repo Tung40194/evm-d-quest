@@ -198,18 +198,18 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         require(_outcomes.length > 0, "No outcome provided");
         
         for (uint256 i = 0; i < _outcomes.length; i++) {
-            if (_outcomes[i].nativeAmount > 0) {
+            if (_outcomes[i].isNative) {
+                require(_outcomes[i].nativeAmount > 0, "Insufficient native reward amount");
                 outcomes._set(_outcomes);
-                continue;
-            }
+            } else {
             require(_outcomes[i].tokenAddress != address(0), "Outcome address is invalid");
             require(_outcomes[i].functionSelector != 0, "functionSelector can't be empty");
             require(
                 keccak256(abi.encodePacked(_outcomes[i].data)) != keccak256(abi.encodePacked("")),
                 "outcomeData can't be empty"
             );
-
             outcomes._set(_outcomes);
+            }
         }
 
         emit OutcomeSet(_outcomes);
@@ -224,6 +224,9 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     function executeQuestOutcome(address _quester) external override whenActive returns (bool result) {
         require(questerProgresses[_quester] == QuesterProgress.Completed, "Quester hasn't completed the Quest");
            for (uint256 i = 0; i < EnumerableSet.length(outcomes.ero[outcomes.outPtr]._keys); i++) {
+            if (outcomes._getOutcome(i).isNative) {
+                _executeNativeOutcome(_quester, outcomes._getOutcome(i));
+            }
             if (outcomes._getOutcome(i).functionSelector == 0x23b872dd) {
                 _executeERC20Outcome(_quester, outcomes._getOutcome(i));
             }
@@ -236,9 +239,6 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             }
             if (outcomes._getOutcome(i).functionSelector == 0x699a0077) {
                 _executeNFTStandardOutcome(_quester, outcomes._getOutcome(i));
-            }
-            if (outcomes._getOutcome(i).functionSelector == 0 && outcomes._getOutcome(i).nativeAmount != 0) {
-                _executeNativeOutcome(_quester, outcomes._getOutcome(i));
             }
         }
         questerProgresses[_quester] = QuesterProgress.Rewarded;

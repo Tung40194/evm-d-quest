@@ -50,6 +50,6 @@ library DQuestStructLib {
         bytes4 functionSelector;
         bytes data;
         uint256 nativeAmount;
-        int256 tokenAmount;
+        bool isNative;
     }
 }
