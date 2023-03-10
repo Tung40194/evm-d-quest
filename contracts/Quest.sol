@@ -3,6 +3,7 @@ pragma solidity 0.8.18;
 
 import "./lib/DQuestStructLib.sol";
 import "./lib/MissionFormula.sol";
+import "./lib/OutcomeManager.sol";
 import "./interface/IQuest.sol";
 import "./interface/IMission.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -11,10 +12,11 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable {
     using MissionFormula for MissionFormula.efficientlyResetableFormula;
+    using OutcomeManager for OutcomeManager.efficientlyResetableOutcome;
 
     address public dQuestOracle; // todo: single or many oracles for dquest?
     MissionFormula.efficientlyResetableFormula missionNodeFormulas;
-    DQuestStructLib.Outcome[] public outcomes; // the outcomes for the quest
+    OutcomeManager.efficientlyResetableOutcome outcomes;
     address[] allQuesters;
     mapping(address quester =>  QuesterProgress progress) questerProgresses;
     mapping(address quester => mapping(uint256 missionNodeId => bool isDone)) questerMissionsDone;
@@ -193,9 +195,13 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     * @param _outcomes The list of possible outcomes to set.
     */
     function setOutcomes(DQuestStructLib.Outcome[] calldata _outcomes) public override onlyOwner {
-        require(_outcomes.length > 0, "No outcomes provided");
+        require(_outcomes.length > 0, "No outcome provided");
         
         for (uint256 i = 0; i < _outcomes.length; i++) {
+            if (_outcomes[i].nativeAmount > 0) {
+                outcomes._set(_outcomes);
+                continue;
+            }
             require(_outcomes[i].tokenAddress != address(0), "Outcome address is invalid");
             require(_outcomes[i].functionSelector != 0, "functionSelector can't be empty");
             require(
@@ -203,7 +209,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
                 "outcomeData can't be empty"
             );
 
-            outcomes.push(_outcomes[i]);
+            outcomes._set(_outcomes);
         }
 
         emit OutcomeSet(_outcomes);
@@ -215,24 +221,24 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     * @param _quester The address of the quester whose outcome to execute.
     * @return result Whether the outcome was successfully executed.
     */
-    function executeQuestOutcome(address _quester) external payable override whenActive returns (bool result) {
+    function executeQuestOutcome(address _quester) external override whenActive returns (bool result) {
         require(questerProgresses[_quester] == QuesterProgress.Completed, "Quester hasn't completed the Quest");
-           for (uint256 i = 0; i < outcomes.length; i++) {
-            if (outcomes[i].functionSelector == 0x23b872dd) {
-                _executeERC20Outcome(_quester, outcomes[i]);
+           for (uint256 i = 0; i < EnumerableSet.length(outcomes.ero[outcomes.outPtr]._keys); i++) {
+            if (outcomes._getOutcome(i).functionSelector == 0x23b872dd) {
+                _executeERC20Outcome(_quester, outcomes._getOutcome(i));
             }
-            if (outcomes[i].functionSelector == 0x42842e0e) {
-                (bytes memory newData) = _executeERC721Outcome(_quester, outcomes[i]);
-                outcomes[i].data = newData;
+            if (outcomes._getOutcome(i).functionSelector == 0x42842e0e) {
+                (bytes memory newData) = _executeERC721Outcome(_quester, outcomes._getOutcome(i));
+                outcomes._getOutcome(i).data = newData;
             }
-            if (outcomes[i].functionSelector == 0xea66696c) {
-                _executeSBTOutcome(_quester, outcomes[i]);
+            if (outcomes._getOutcome(i).functionSelector == 0xea66696c) {
+                _executeSBTOutcome(_quester, outcomes._getOutcome(i));
             }
-            if (outcomes[i].functionSelector == 0x699a0077) {
-                _executeNFTStandardOutcome(_quester, outcomes[i]);
+            if (outcomes._getOutcome(i).functionSelector == 0x699a0077) {
+                _executeNFTStandardOutcome(_quester, outcomes._getOutcome(i));
             }
-            if (outcomes[i].functionSelector == 0 && outcomes[i].nativeAmount != 0) {
-                _executeNativeOutcome(_quester, outcomes[i]);
+            if (outcomes._getOutcome(i).functionSelector == 0 && outcomes._getOutcome(i).nativeAmount != 0) {
+                _executeNativeOutcome(_quester, outcomes._getOutcome(i));
             }
         }
         questerProgresses[_quester] = QuesterProgress.Rewarded;

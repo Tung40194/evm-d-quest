@@ -120,7 +120,7 @@ interface IQuest {
     /// @param quester The quester who wants to receive the quest's outcome.
     /// @return executeSuccess Returns `true` if the outcome is executed successfully.
     /// Returns `false` if the execution fails or the quest is closed.
-    function executeQuestOutcome(address quester) external payable returns (bool executeSuccess);
+    function executeQuestOutcome(address quester) external returns (bool executeSuccess);
 
     /// QUESTER FUNCTIONS
 
