@@ -110,9 +110,8 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         onlyOwner
         whenInactive
     {
-        require(nodes.length > 0, "Empty node list");
         // TODO: Validation of input mission nodes: mission interface, binary tree index...
-        missionNodeFormulas._set(nodes);
+        require(missionNodeFormulas._set(nodes), "Empty node list");
         emit MissionNodeFormulasSet(nodes);
     }
 

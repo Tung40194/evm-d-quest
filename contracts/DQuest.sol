@@ -22,9 +22,7 @@ contract DQuest is IDQuest, Initializable, OwnableUpgradeable {
         uint256 startTime,
         uint256 endTime
     );
-
-    using CountersUpgradeable for CountersUpgradeable.Counter;
-
+    
     Beacon internal beacon;
     //TODO improve storage for quests/proxies and adminQuests
     // managing all quest/proxies addresses
