@@ -200,17 +200,15 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         for (uint256 i = 0; i < _outcomes.length; i++) {
             if (_outcomes[i].isNative) {
                 require(_outcomes[i].nativeAmount > 0, "Insufficient native reward amount");
-                outcomes._set(_outcomes);
             } else {
             require(_outcomes[i].tokenAddress != address(0), "Outcome address is invalid");
             require(_outcomes[i].functionSelector != 0, "functionSelector can't be empty");
             require(
                 keccak256(abi.encodePacked(_outcomes[i].data)) != keccak256(abi.encodePacked("")),
                 "outcomeData can't be empty"
-            );
-            outcomes._set(_outcomes);
-            }
+            );}
         }
+        outcomes._set(_outcomes);
 
         emit OutcomeSet(_outcomes);
     }
