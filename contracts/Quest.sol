@@ -72,17 +72,20 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     * Emits a `MissionNodeFormulasSet` event.
     */
     function init(
+        address owner,
         DQuestStructLib.MissionNode[] calldata nodes,
         DQuestStructLib.Outcome[] calldata outcomes,
         uint256 questStartTime,
         uint256 questEndTime
-    ) internal onlyInitializing {
+    ) external onlyInitializing {
         //TODO check carefully
         require(questStartTime < questEndTime, "Invalid quest lifetime");
         __Ownable_init();
         __Pausable_init();
         setMissionNodeFormulas(nodes);
         setOutcomes(outcomes);
+        // d.quest's transfering ownership to quest admin
+        transferOwnership(owner);
         startTimestamp = questStartTime;
         endTimestamp = questEndTime;
     }
