@@ -217,31 +217,29 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     * @dev Executes the quest outcome for the specified quester.
     * Only the quest can call this function when the quest is active.
     * @param _quester The address of the quester whose outcome to execute.
-    * @return result Whether the outcome was successfully executed.
     */
-    function executeQuestOutcome(address _quester) external override whenActive returns (bool result) {
-        require(questerProgresses[_quester] == QuesterProgress.Completed, "Quester hasn't completed the Quest");
-           for (uint256 i = 0; i < EnumerableSet.length(outcomes.ero[outcomes.outPtr]._keys); i++) {
+    function executeQuestOutcome(address _quester) external override whenActive {
+        //require(questerProgresses[_quester] == QuesterProgress.Completed, "Quester hasn't completed the Quest");
+           for (uint256 i = 0; i < outcomes._length(); i++) {
             if (outcomes._getOutcome(i).isNative) {
                 _executeNativeOutcome(_quester, outcomes._getOutcome(i));
             }
-            if (outcomes._getOutcome(i).functionSelector == 0x23b872dd) {
+            if (outcomes._getOutcome(i).functionSelector == SELECTOR_TRANSFERFROM) {
                 _executeERC20Outcome(_quester, outcomes._getOutcome(i));
             }
-            if (outcomes._getOutcome(i).functionSelector == 0x42842e0e) {
+            if (outcomes._getOutcome(i).functionSelector == SELECTOR_SAFETRANSFERFROM) {
                 (bytes memory newData) = _executeERC721Outcome(_quester, outcomes._getOutcome(i));
                 outcomes._getOutcome(i).data = newData;
             }
-            if (outcomes._getOutcome(i).functionSelector == 0xea66696c) {
+            if (outcomes._getOutcome(i).functionSelector == SELECTOR_SBTMINT) {
                 _executeSBTOutcome(_quester, outcomes._getOutcome(i));
             }
-            if (outcomes._getOutcome(i).functionSelector == 0x699a0077) {
+            if (outcomes._getOutcome(i).functionSelector == SELECTOR_NFTSTANDARDMINT) {
                 _executeNFTStandardOutcome(_quester, outcomes._getOutcome(i));
             }
         }
         questerProgresses[_quester] = QuesterProgress.Rewarded;
         emit OutcomeExecuted(_quester);  
-        return true;
     }
 
     function _executeERC20Outcome(address _quester, DQuestStructLib.Outcome memory outcome)
@@ -249,9 +247,11 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     {
         address spender;
         uint256 value;
+        bytes memory data = outcome.data;
+
         assembly {
-            spender := mload(add(outcome, 36))
-            value := mload(add(outcome, 100))
+            spender := mload(add(data, 36))
+            value := mload(add(data, 100))
         }
 
         (bool success, bytes memory response) = outcome.tokenAddress.call(
@@ -275,10 +275,11 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     {
         address spender;
         uint256 tokenId;
+        bytes memory data = outcome.data;
 
         assembly {
-            spender := mload(add(outcome, 36))
-            tokenId := mload(add(outcome, 100))
+            spender := mload(add(data, 36))
+            tokenId := mload(add(data, 100))
         }
 
         (bool success, bytes memory response) = outcome.tokenAddress.call(
@@ -294,6 +295,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     function _executeNFTStandardOutcome(address _quester, DQuestStructLib.Outcome memory outcome)
         internal
     {
+        bytes memory data = outcome.data;
         uint256 mintingConditionId;
         uint256 amount;
         address[] memory quester = new address[](1);
@@ -304,8 +306,8 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         merkleRoot[0] = 0x0000000000000000000000000000000000000000000000000000000000000000;
 
         assembly {
-            mintingConditionId := mload(add(outcome, 164))
-            amount := mload(add(outcome, 228))
+            mintingConditionId := mload(add(data, 164))
+            amount := mload(add(data, 228))
         }
 
         (bool success, bytes memory response) = outcome.tokenAddress.call(
@@ -325,12 +327,13 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     function _executeSBTOutcome(address _quester, DQuestStructLib.Outcome memory outcome)
         internal
     {
+        bytes memory data = outcome.data;   
         uint256 expiration;
         address[] memory quester = new address[](1);
         quester[0] = _quester;
 
         assembly {
-            expiration := mload(add(outcome, 196))
+            expiration := mload(add(data, 196))
         }
 
         (bool success, bytes memory response) = outcome.tokenAddress.call(
@@ -343,8 +346,8 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     function _executeNativeOutcome(address _quester, DQuestStructLib.Outcome memory outcome)
         internal
     {
-        (bool sent, bytes memory data) = payable(_quester).call{value: outcome.nativeAmount}("");
-        require(sent, string(data));
+        (bool success, bytes memory response) = payable(_quester).call{value: outcome.nativeAmount}("");
+        require(success, string(response));
     }
 
     receive() external payable {

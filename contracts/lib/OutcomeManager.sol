@@ -77,4 +77,13 @@ library OutcomeManager {
         // inc pointer to reset mapping; omit id #0
         o.outPtr ++;
     }
+
+      /**
+     * @dev Returns the outcome length of the given efficientlyResetableOutcome.
+     * @param o efficientlyResetableOutcome to get length from.
+     * @return outcomeLength with the given efficientlyResetableOutcome.
+     */
+    function _length(efficientlyResetableOutcome storage o) internal view returns(uint256) {
+        return EnumerableSet.length(o.ero[o.outPtr]._keys);
+    }
 }

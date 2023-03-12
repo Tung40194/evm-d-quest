@@ -118,9 +118,7 @@ interface IQuest {
     /// @dev This function is public and can only be called by anyone.
     /// Whether the quester is eligible to receive the outcome depends on the allQuesterStatuses mapping.
     /// @param quester The quester who wants to receive the quest's outcome.
-    /// @return executeSuccess Returns `true` if the outcome is executed successfully.
-    /// Returns `false` if the execution fails or the quest is closed.
-    function executeQuestOutcome(address quester) external returns (bool executeSuccess);
+    function executeQuestOutcome(address quester) external;
 
     /// QUESTER FUNCTIONS
 
