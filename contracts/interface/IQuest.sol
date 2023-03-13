@@ -42,11 +42,20 @@ interface IQuest {
     /**
      * @dev Sets the formulas for the mission nodes.
      * @notice Only the contract owner can call this function.
-     * @param nodes The array of mission nodes to set.
+     * @param nodes The array of mission nodes to set. MUST be a directed binary tree.
      * Emits a `MissionNodeFormulasSet` event.
-     * Warning: wrong order in the input array can fail the entire formula
-     * For example given a formula: ((M1 AND M2 AND M3) OR (M4 AND M1))
-     * We have the following tree:
+     *
+     * We have 2 kinds of node:
+     *  - Mission node (see the M* nodes at the tree below)
+     *  - Operator node (see AND and OR node at the tree below)
+     *
+     * Input constraints (`nodes`'s constraints):
+     *  - Nodes' ids MUST be unique.
+     *  - Nodes' ids MUST be positive integers in range [1:].
+     *  - LeftNode/RightNode MUST be either 0 or refer to other nodes' ids.
+     *  - In case of leafNode (also Mission node(not "operator" node)), its LeftNode/RightNode must be both 0.
+     *  - The input array `nodes` MUST not contain any cycles.
+     * 
      *                             OR(0)
      *                           /        `
      *                          /            `
@@ -59,11 +68,8 @@ interface IQuest {
      *             /       `
      *           M1(7)       `M2(8)
      *
-     * The numbers in the parentheses are the indexes of the nodes and each
-     * node should be added to the tree in that exact order (0->1->2-> ...)
-     * otherwise the entire formula can fail.
-     * A correct orderredly constructed array should be: [node0, node1, node2, ... node8]
-     * The indexes of leftNode and rightNode as seen in the tree above. If none, filled with zero(0).
+     * FYI:
+     *  - The numbers in the parentheses are the indexes of the nodes
      */
     function setMissionNodeFormulas(DQuestStructLib.MissionNode[] calldata nodes) external;
 

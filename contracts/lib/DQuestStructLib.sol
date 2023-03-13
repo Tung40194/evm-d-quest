@@ -23,7 +23,6 @@ library DQuestStructLib {
         Retweet
     }
 
-    /// @notice MissionNode stands for a mission parameters
     /// @dev MisisonNode can be an operator or a mission with parameters defined inside of Slot0/Slot1 fields
     /// @param id The index of the node in the array of missionNodeFormula.
     /// @param isMission Is the node a mission or an operator
