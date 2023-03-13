@@ -219,23 +219,24 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     * @param _quester The address of the quester whose outcome to execute.
     */
     function executeQuestOutcome(address _quester) external override whenActive {
-        //require(questerProgresses[_quester] == QuesterProgress.Completed, "Quester hasn't completed the Quest");
+        require(questerProgresses[_quester] == QuesterProgress.Completed, "Quester hasn't completed the Quest");
            for (uint256 i = 0; i < outcomes._length(); i++) {
-            if (outcomes._getOutcome(i).isNative) {
-                _executeNativeOutcome(_quester, outcomes._getOutcome(i));
+            DQuestStructLib.Outcome memory outcome = outcomes._getOutcome(i);
+            if (outcome.isNative) {
+                _executeNativeOutcome(_quester, outcome);
             }
-            if (outcomes._getOutcome(i).functionSelector == SELECTOR_TRANSFERFROM) {
-                _executeERC20Outcome(_quester, outcomes._getOutcome(i));
+            if (outcome.functionSelector == SELECTOR_TRANSFERFROM) {
+                _executeERC20Outcome(_quester, outcome);
             }
-            if (outcomes._getOutcome(i).functionSelector == SELECTOR_SAFETRANSFERFROM) {
-                (bytes memory newData) = _executeERC721Outcome(_quester, outcomes._getOutcome(i));
+            if (outcome.functionSelector == SELECTOR_SAFETRANSFERFROM) {
+                (bytes memory newData) = _executeERC721Outcome(_quester, outcome);
                 outcomes._getOutcome(i).data = newData;
             }
-            if (outcomes._getOutcome(i).functionSelector == SELECTOR_SBTMINT) {
-                _executeSBTOutcome(_quester, outcomes._getOutcome(i));
+            if (outcome.functionSelector == SELECTOR_SBTMINT) {
+                _executeSBTOutcome(_quester, outcome);
             }
-            if (outcomes._getOutcome(i).functionSelector == SELECTOR_NFTSTANDARDMINT) {
-                _executeNFTStandardOutcome(_quester, outcomes._getOutcome(i));
+            if (outcome.functionSelector == SELECTOR_NFTSTANDARDMINT) {
+                _executeNFTStandardOutcome(_quester, outcome);
             }
         }
         questerProgresses[_quester] = QuesterProgress.Rewarded;
@@ -286,8 +287,9 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             abi.encodeWithSelector(SELECTOR_SAFETRANSFERFROM, spender, _quester, tokenId)
         );
         require(success, string(response));
+        tokenId++;
 
-        bytes memory _newData = abi.encodeWithSelector(SELECTOR_SAFETRANSFERFROM, spender, _quester, tokenId++);
+        bytes memory _newData = abi.encodeWithSelector(SELECTOR_SAFETRANSFERFROM, spender, _quester, tokenId);
 
         return (_newData);
     }
