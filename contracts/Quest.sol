@@ -13,7 +13,6 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable {
     using MissionFormula for MissionFormula.efficientlyResetableFormula;
     using mNodeId2Iterator for mNodeId2Iterator.ResetableId2iterator;
-    using EnumerableSet for EnumerableSet.AddressSet;
 
     // binary tree cycles detection helpers
     mNodeId2Iterator.ResetableId2iterator id2itr1;
