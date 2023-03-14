@@ -15,28 +15,22 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     address public dQuestOracle; // todo: single or many oracles for dquest?
     MissionFormula.efficientlyResetableFormula missionNodeFormulas;
     address[] allQuesters;
-    mapping(address quester =>  QuesterProgress progress) questerProgresses;
+    mapping(address quester => QuesterProgress progress) questerProgresses;
     mapping(address quester => mapping(uint256 missionNodeId => bool isDone)) questerMissionsDone;
     uint256 startTimestamp;
     uint256 endTimestamp;
 
     // TODO: check allQuesters's role
     modifier onlyQuester() {
-        require(
-            questerProgresses[msg.sender] != QuesterProgress.NotEnrolled,
-            "For questers only"
-        );
+        require(questerProgresses[msg.sender] != QuesterProgress.NotEnrolled, "For questers only");
         _;
     }
 
     modifier questerNotEnrolled() {
-        require(
-            questerProgresses[msg.sender] == QuesterProgress.NotEnrolled,
-            "Quester already joined"
-        );
+        require(questerProgresses[msg.sender] == QuesterProgress.NotEnrolled, "Quester already joined");
         _;
     }
-    
+
     // when quest is inactive
     modifier whenInactive() {
         require(block.timestamp < startTimestamp, "Quest has started");
@@ -64,14 +58,14 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     /**
-    * @dev Initializes the contract with the specified mission nodes and quest start/end times.
-    * @notice This function can only be called during the initialization phase of the contract.
-    * @notice Check docstrings of setMissionNodeFormulas carefully
-    * @param nodes The array of mission nodes to set.
-    * @param questStartTime The timestamp at which the quest starts.
-    * @param questEndTime The timestamp at which the quest ends.
-    * Emits a `MissionNodeFormulasSet` event.
-    */
+     * @dev Initializes the contract with the specified mission nodes and quest start/end times.
+     * @notice This function can only be called during the initialization phase of the contract.
+     * @notice Check docstrings of setMissionNodeFormulas carefully
+     * @param nodes The array of mission nodes to set.
+     * @param questStartTime The timestamp at which the quest starts.
+     * @param questEndTime The timestamp at which the quest ends.
+     * Emits a `MissionNodeFormulasSet` event.
+     */
     function init(
         DQuestStructLib.MissionNode[] calldata nodes,
         DQuestStructLib.Outcome[] calldata outcomes,
@@ -88,11 +82,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         endTimestamp = questEndTime;
     }
 
-    function setMissionStatus(
-        address quester,
-        uint256 missionNodeId,
-        bool isMissionDone
-    ) public {
+    function setMissionStatus(address quester, uint256 missionNodeId, bool isMissionDone) public {
         DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(
             msg.sender == node.missionHandlerAddress || msg.sender == node.oracleAddress,
@@ -102,12 +92,9 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         questerMissionsDone[quester][missionNodeId] = isMissionDone;
     }
 
-    function setMissionNodeFormulas(DQuestStructLib.MissionNode[] calldata nodes)
-        public
-        override
-        onlyOwner
-        whenInactive
-    {
+    function setMissionNodeFormulas(
+        DQuestStructLib.MissionNode[] calldata nodes
+    ) public override onlyOwner whenInactive {
         require(nodes.length > 0, "Empty node list");
         // TODO: Validation of input mission nodes: mission interface, binary tree index...
         missionNodeFormulas._set(nodes);
@@ -119,10 +106,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
      * @param nodeId Always the root node of the formula
      * @param user address of user's to be verified
      */
-    function evalMF(
-        uint256 nodeId,
-        address user
-    ) private returns (bool) {
+    function evalMF(uint256 nodeId, address user) private returns (bool) {
         //TODO validate the binary tree's depth
         DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(nodeId);
         if (node.isMission) {
@@ -148,7 +132,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         return result;
     }
 
-    function validateMission(uint256 missionNodeId) public override onlyQuester whenNotPaused returns(bool) {
+    function validateMission(uint256 missionNodeId) public override onlyQuester whenNotPaused returns (bool) {
         DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(node.isMission == true, "Not a mission");
         bool cache = questerMissionsDone[msg.sender][missionNodeId];
@@ -159,7 +143,6 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             return mission.validateMission(msg.sender, node);
         }
         return cache;
-
     }
 
     function pauseQuest() external override onlyOwner {
@@ -181,20 +164,20 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     /**
-    * @dev Sets the list of possible outcomes for the quest.
-    * Only the contract owner can call this function.
-    * @param _outcomes The list of possible outcomes to set.
-    */
+     * @dev Sets the list of possible outcomes for the quest.
+     * Only the contract owner can call this function.
+     * @param _outcomes The list of possible outcomes to set.
+     */
     function setOutcomes(DQuestStructLib.Outcome[] calldata _outcomes) public override onlyOwner {
         // TODO
     }
 
     /**
-    * @dev Executes the quest outcome for the specified quester.
-    * Only the quest can call this function when the quest is active.
-    * @param _quester The address of the quester whose outcome to execute.
-    * @return result Whether the outcome was successfully executed.
-    */
+     * @dev Executes the quest outcome for the specified quester.
+     * Only the quest can call this function when the quest is active.
+     * @param _quester The address of the quester whose outcome to execute.
+     * @return result Whether the outcome was successfully executed.
+     */
     function executeQuestOutcome(address _quester) external override whenActive returns (bool result) {
         //TODO set questerProgresses[msg.sender] = QuesterProgress.Rewarded;
     }

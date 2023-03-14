@@ -28,12 +28,11 @@ contract NFThodler is IMission, Ownable {
     }
 
     //TODO improve when quests number increases
-    function isAQuest(address input) private view returns(bool) {
+    function isAQuest(address input) private view returns (bool) {
         IDQuest dquest = IDQuest(dquestContract);
         address[] memory quests = dquest.getAllQuests();
-        for (uint256 index = 0; index < quests.length; index ++) {
-            if (input == quests[index])
-                return true;
+        for (uint256 index = 0; index < quests.length; index++) {
+            if (input == quests[index]) return true;
         }
         return false;
     }
@@ -41,7 +40,7 @@ contract NFThodler is IMission, Ownable {
     /**
      * To meet mission formula setup from Quest, decode MissionNode.data with the following schema
      * data schema: (address token_address, uint256 start_id, uint256 stop_id)
-    */
+     */
     function validateMission(
         address quester,
         DQuestStructLib.MissionNode calldata node
