@@ -27,6 +27,9 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     uint256 startTimestamp;
     uint256 endTimestamp;
 
+    // utility mapping for NFT handler only
+    mapping(address => mapping(uint256 => bool)) tokenUsed;
+
     // TODO: check allQuesters's role
     modifier onlyQuester() {
         require(questerProgresses[msg.sender] != QuesterProgress.NotEnrolled, "For questers only");
@@ -296,5 +299,15 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             revert("no root found");
 
         return rootNode;
+    }
+
+    function erc721SetTokenUsed(uint256 missionNodeId, address addr, uint256 tokenId) external override {
+        DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
+        require(msg.sender == node.missionHandlerAddress, "Can not update cross-mission states");
+        tokenUsed[addr][tokenId] = true;
+    }
+
+    function erc721GetTokenUsed(address addr, uint256 tokenId) external view override returns(bool) {
+        return tokenUsed[addr][tokenId];
     }
 }
