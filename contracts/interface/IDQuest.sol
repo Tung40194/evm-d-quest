@@ -49,7 +49,7 @@ interface IDQuest {
     * @param contractAddr The address of the contract to check.
     * @return A boolean value indicating whether the contract is a Quest.
     */
-    function isAQuest(address contractAddr) external view returns(bool);
+    function isQuest(address contractAddr) external view returns(bool);
 
     /**
     * @dev Returns an array of all Quest contract addresses.

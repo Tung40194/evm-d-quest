@@ -37,7 +37,7 @@ contract NFThodler is IMission, Ownable {
     ) external returns (bool isComplete) {
         //TODO ensure only quest contracts calling
         IDQuest dquest = IDQuest(dquestContract);
-        require(dquest.isAQuest(msg.sender), "Caller is not a quest");
+        require(dquest.isQuest(msg.sender), "Caller is not a quest");
         IQuest quest = IQuest(msg.sender);
 
         // start decoding node.data

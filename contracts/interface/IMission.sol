@@ -11,7 +11,7 @@ interface IMission {
 
     /**
      * @dev Validates the mission submitted.
-     * @notice caller MUST belong to d.quest's quest contracts. Use DQuest::isAQuest() method to verify
+     * @notice caller MUST belong to d.quest's quest contracts. Use DQuest::isQuest() method to verify
      * @param quester The address of the quester submitting the mission.
      * @param node The mission to be validated.
      * @return isComplete Returns validation result

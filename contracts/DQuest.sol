@@ -79,7 +79,7 @@ contract DQuest is IDQuest, Initializable, OwnableUpgradeable {
         beacon.updateContract(implContract);
     }
 
-    function isAQuest(address contractAddr) external virtual view override returns(bool) {
+    function isQuest(address contractAddr) external virtual view override returns(bool) {
         return (quests.contains(contractAddr));
     }
 
