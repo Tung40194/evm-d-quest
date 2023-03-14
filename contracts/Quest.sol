@@ -13,6 +13,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable {
     using MissionFormula for MissionFormula.efficientlyResetableFormula;
     using mNodeId2Iterator for mNodeId2Iterator.ResetableId2iterator;
+    using EnumerableSet for EnumerableSet.AddressSet;
 
     // binary tree cycles detection helpers
     mNodeId2Iterator.ResetableId2iterator id2itr1;
@@ -26,6 +27,9 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     mapping(address quester => mapping(uint256 missionNodeId => bool isDone)) questerMissionsDone;
     uint256 startTimestamp;
     uint256 endTimestamp;
+
+    // utility mapping for NFT handler only
+    mapping(address => mapping(uint256 => bool)) tokenUsed;
 
     // TODO: check allQuesters's role
     modifier onlyQuester() {
@@ -296,5 +300,15 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             revert("no root found");
 
         return rootNode;
+    }
+
+    function erc721SetTokenUsed(uint256 missionNodeId, address addr, uint256 tokenId) external override {
+        DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
+        require(msg.sender == node.missionHandlerAddress, "Can not update cross-mission states");
+        tokenUsed[addr][tokenId] = true;
+    }
+
+    function erc721GetTokenUsed(address addr, uint256 tokenId) external view override returns(bool) {
+        return tokenUsed[addr][tokenId];
     }
 }

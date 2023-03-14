@@ -137,4 +137,23 @@ interface IQuest {
      * @return totalQuesters total number of questers.
      */
     function getTotalQuesters() external view returns (uint256 totalQuesters);
+
+    /**
+    * @dev Marks an ERC721 token as used for a specific mission node.
+    * @param missionNodeId The ID of the mission node to associate the token with.
+    * @param addr The address of the owner of the token.
+    * @param tokenId The ID of the token to mark as used.
+    * @notice This function can only be called by the mission handler associated with the specified mission node.
+    * @notice Once a token has been marked as used for a mission node, it cannot be used for any other mission node.
+    */
+    function erc721SetTokenUsed(uint256 missionNodeId, address addr, uint256 tokenId) external;
+
+
+    /**
+    * @dev Checks if an ERC721 token has been marked as used for a specific mission node.
+    * @param addr The address of the owner of the token.
+    * @param tokenId The ID of the token to check.
+    * @return bool Returns true if the token has been marked as used for the specified mission node, false otherwise.
+    */
+    function erc721GetTokenUsed(address addr, uint256 tokenId) external view returns(bool);
 }
