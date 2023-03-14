@@ -31,7 +31,6 @@ contract NFThodler is IMission, Ownable {
         address quester,
         DQuestStructLib.MissionNode calldata node
     ) external returns (bool isComplete) {
-        //TODO ensure only quest contracts calling
         IDQuest dquest = IDQuest(dquestContract);
         require(dquest.isQuest(msg.sender), "Caller is not a quest");
         IQuest quest = IQuest(msg.sender);
@@ -50,9 +49,11 @@ contract NFThodler is IMission, Ownable {
             if (!tokenInUse && tokenContract.ownerOf(index) == quester) {
                 quest.setMissionStatus(quester, node.id, true);
                 quest.erc721SetTokenUsed(node.id, tokenAddr, index);
+                emit MissionValidated(quester, node);
                 return true;
             }
         }
+        emit MissionValidated(quester, node);
         return false;
     }
 }
