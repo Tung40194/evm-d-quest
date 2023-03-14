@@ -3,12 +3,12 @@ pragma solidity 0.8.18;
 
 import "./DQuestStructLib.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
 /**
  * @title OutcomeManager
  * @dev This library defines data structures and functions related to outcome for quest.
  */
 library OutcomeManager {
-    
     // Use EnumerableSet to manage node ids
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -41,10 +41,10 @@ library OutcomeManager {
     function _set(
         efficientlyResetableOutcome storage o,
         DQuestStructLib.Outcome[] memory outcomes
-    ) internal returns(bool) {
+    ) internal returns (bool) {
         _reset(o);
-        if (outcomes.length != 0){
-            for(uint256 idx = 0; idx < outcomes.length; idx ++) {
+        if (outcomes.length != 0) {
+            for (uint256 idx = 0; idx < outcomes.length; idx++) {
                 o.ero[o.outPtr]._values[idx] = outcomes[idx];
                 // outcome index(in the array) is the outcomeId
                 assert(o.ero[o.outPtr]._keys.add(idx));
@@ -54,7 +54,7 @@ library OutcomeManager {
             return false;
         }
     }
-    
+
     /**
      * @dev Returns the outcome with the given id from the given efficientlyResetableOutcome.
      * @param o efficientlyResetableOutcome to get outcome from.
@@ -64,7 +64,7 @@ library OutcomeManager {
     function _getOutcome(
         efficientlyResetableOutcome storage o,
         uint256 outcomeId
-    ) internal view returns(DQuestStructLib.Outcome memory) {
+    ) internal view returns (DQuestStructLib.Outcome memory) {
         require(o.ero[o.outPtr]._keys.contains(outcomeId), "Null Outcome");
         return o.ero[o.outPtr]._values[outcomeId];
     }
@@ -75,15 +75,25 @@ library OutcomeManager {
      */
     function _reset(efficientlyResetableOutcome storage o) private {
         // inc pointer to reset mapping; omit id #0
-        o.outPtr ++;
+        o.outPtr++;
     }
 
-      /**
+    /**
+     * @dev Replace the current outcome with the new one for the given id in efficientlyResetableOutcome.
+     * @param o efficientlyResetableOutcome to replace outcome to.
+     * @param outcomeId Id of the outcome to replace. Must exist.
+     */
+    function _replace(efficientlyResetableOutcome storage o, uint256 outcomeId, DQuestStructLib.Outcome memory outcome) internal {
+        require(o.ero[o.outPtr]._keys.contains(outcomeId), "Null Outcome");
+        o.ero[o.outPtr]._values[outcomeId] = outcome;
+    }
+
+    /**
      * @dev Returns the outcome length of the given efficientlyResetableOutcome.
      * @param o efficientlyResetableOutcome to get length from.
      * @return outcomeLength with the given efficientlyResetableOutcome.
      */
-    function _length(efficientlyResetableOutcome storage o) internal view returns(uint256) {
+    function _length(efficientlyResetableOutcome storage o) internal view returns (uint256) {
         return EnumerableSet.length(o.ero[o.outPtr]._keys);
     }
 }

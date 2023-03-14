@@ -9,8 +9,9 @@ import "./interface/IMission.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
-contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable {
+contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using MissionFormula for MissionFormula.efficientlyResetableFormula;
     using OutcomeManager for OutcomeManager.efficientlyResetableOutcome;
 
@@ -218,7 +219,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     * Only the quest can call this function when the quest is active.
     * @param _quester The address of the quester whose outcome to execute.
     */
-    function executeQuestOutcome(address _quester) external override whenActive {
+    function executeQuestOutcome(address _quester) external override whenActive nonReentrant {
         require(questerProgresses[_quester] == QuesterProgress.Completed, "Quester hasn't completed the Quest");
            for (uint256 i = 0; i < outcomes._length(); i++) {
             DQuestStructLib.Outcome memory outcome = outcomes._getOutcome(i);
@@ -230,7 +231,8 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             }
             if (outcome.functionSelector == SELECTOR_SAFETRANSFERFROM) {
                 (bytes memory newData) = _executeERC721Outcome(_quester, outcome);
-                outcomes._getOutcome(i).data = newData;
+                outcome.data = newData;
+                outcomes._replace(i, outcome);
             }
             if (outcome.functionSelector == SELECTOR_SBTMINT) {
                 _executeSBTOutcome(_quester, outcome);
