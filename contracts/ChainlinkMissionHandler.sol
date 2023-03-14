@@ -13,11 +13,7 @@ abstract contract ChainlinkMissionHandler is IChainlinkMissionHandler, Chainlink
     address public linkToken;
     address public linkOracle;
 
-    constructor(
-        address linkAddress,
-        address oracleAddress,
-        bytes32 jobId
-    ) ConfirmedOwner(msg.sender) {
+    constructor(address linkAddress, address oracleAddress, bytes32 jobId) ConfirmedOwner(msg.sender) {
         // LINK addresses
         // ethereum mainnet: 0x514910771AF9Ca656af840dff83E8264EcF986CA
         // ethereum goerli: 0x326C977E6efc84E512bB9C30f76E30c160eD06FB

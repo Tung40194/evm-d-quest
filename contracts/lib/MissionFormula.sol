@@ -3,12 +3,12 @@ pragma solidity 0.8.18;
 
 import "./DQuestStructLib.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
 /**
  * @title MissionFormula
  * @dev This library defines data structures and functions related to mission formulas.
  */
 library MissionFormula {
-    
     // Use EnumerableSet to manage node ids
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -41,10 +41,10 @@ library MissionFormula {
     function _set(
         efficientlyResetableFormula storage f,
         DQuestStructLib.MissionNode[] memory nodes
-    ) internal returns(bool) {
+    ) internal returns (bool) {
         _reset(f);
-        if (nodes.length != 0){
-            for(uint256 idx = 0; idx < nodes.length; idx ++) {
+        if (nodes.length != 0) {
+            for (uint256 idx = 0; idx < nodes.length; idx++) {
                 f.erf[f.rstPtr]._values[idx] = nodes[idx];
                 // node index(in the array) is the nodeId
                 assert(f.erf[f.rstPtr]._keys.add(idx));
@@ -54,7 +54,7 @@ library MissionFormula {
             return false;
         }
     }
-    
+
     /**
      * @dev Returns the mission node with the given id from the given formula.
      * @param f Formula to get mission node from.
@@ -64,7 +64,7 @@ library MissionFormula {
     function _getNode(
         efficientlyResetableFormula storage f,
         uint256 nodeId
-    ) internal view returns(DQuestStructLib.MissionNode memory) {
+    ) internal view returns (DQuestStructLib.MissionNode memory) {
         require(f.erf[f.rstPtr]._keys.contains(nodeId), "Null mission");
         return f.erf[f.rstPtr]._values[nodeId];
     }
@@ -75,6 +75,6 @@ library MissionFormula {
      */
     function _reset(efficientlyResetableFormula storage f) private {
         // inc pointer to reset mapping; omit id #0
-        f.rstPtr ++;
+        f.rstPtr++;
     }
 }
