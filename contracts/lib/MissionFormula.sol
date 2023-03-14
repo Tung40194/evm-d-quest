@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.18;
 
+// Error Codes:
+// MF1 - repetitive id
+// MF2 - node(s) missing
+// MF3 - tree loops
+
 import "./DQuestStructLib.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
@@ -32,6 +37,24 @@ library MissionFormula {
         uint256 rstPtr;
     }
 
+    // check if nodeid is the root of the tree
+    function _isRoot(efficientlyResetableFormula storage f, uint256 nodeId) private view returns(bool) {
+        require(f.erf[f.rstPtr]._keys.contains(nodeId), "Null node");
+        Formula storage formula = f.erf[f.rstPtr];
+        uint256 len = formula._keys.length();
+        for(uint256 index = 0; index < len; index ++) {
+            uint256 key = formula._keys.at(index);
+            DQuestStructLib.MissionNode memory node = formula._values[key];
+            // if it is node to be checked, continue
+            if (node.id == nodeId) 
+                continue;
+            // if node is a child node, node is not a root node
+            if (node.leftNode == nodeId || node.rightNode == nodeId)
+                return false;
+        }
+        return true;
+    }
+
     /**
      * @dev Adds nodes to the given formula and resets it.
      * @param f Formula to add nodes to.
@@ -46,13 +69,21 @@ library MissionFormula {
         if (nodes.length != 0) {
             for (uint256 idx = 0; idx < nodes.length; idx++) {
                 f.erf[f.rstPtr]._values[idx] = nodes[idx];
-                // node index(in the array) is the nodeId
-                assert(f.erf[f.rstPtr]._keys.add(idx));
+                assert(f.erf[f.rstPtr]._keys.add(nodes[idx].id));
             }
             return true;
         } else {
             return false;
         }
+    }
+
+    /**
+     * @dev Resets the given formula by incrementing the pointer to the next formula in the mapping.
+     * @param f Formula to reset.
+     */
+    function _reset(efficientlyResetableFormula storage f) private {
+        // inc pointer to reset mapping; omit id #0
+        f.rstPtr ++;
     }
 
     /**
@@ -64,17 +95,8 @@ library MissionFormula {
     function _getNode(
         efficientlyResetableFormula storage f,
         uint256 nodeId
-    ) internal view returns (DQuestStructLib.MissionNode memory) {
-        require(f.erf[f.rstPtr]._keys.contains(nodeId), "Null mission");
+    ) internal view returns(DQuestStructLib.MissionNode memory) {
+        require(f.erf[f.rstPtr]._keys.contains(nodeId), "Null node");
         return f.erf[f.rstPtr]._values[nodeId];
-    }
-
-    /**
-     * @dev Resets the given formula by incrementing the pointer to the next formula in the mapping.
-     * @param f Formula to reset.
-     */
-    function _reset(efficientlyResetableFormula storage f) private {
-        // inc pointer to reset mapping; omit id #0
-        f.rstPtr++;
     }
 }
