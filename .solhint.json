@@ -6,6 +6,7 @@
     "ordering": "warn",
     "compiler-version": ["error", "^0.8.0"],
     "func-visibility": ["warn", { "ignoreConstructors": true }],
-    "mark-callable-contracts": "off"
+    "mark-callable-contracts": "off",
+    "indent": "off"
   }
 }
