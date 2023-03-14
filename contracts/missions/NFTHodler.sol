@@ -16,7 +16,7 @@ contract NFThodler is IMission, Ownable {
     address public dquestContract;
 
     constructor(address dQuest) {
-        require(dQuest != address(0x0), "can't be 0x0");
+        require(dQuest != address(0x0), "dquest can't be 0x0");
         dquestContract = dQuest;
     }
 

@@ -6,7 +6,7 @@ interface IChainlinkMissionHandler {
 
     /// @dev send request to oracle
     /// @param apiUrl: api url oracle will consume the response
-    function request(string calldata apiUrl) external returns (bytes32 requestId);
+    function request(string memory apiUrl) external returns (bytes32 requestId);
 
     /// @dev receive response from oracle
     /// @param requestId: oracle request ID
