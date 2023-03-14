@@ -23,6 +23,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     mapping(address quester => mapping(uint256 missionNodeId => bool isDone)) questerMissionsDone;
     uint256 startTimestamp;
     uint256 endTimestamp;
+    uint256 private isAvailableReward;
 
     bytes4 constant SELECTOR_TRANSFERFROM = bytes4(keccak256(bytes("transferFrom(address,address,uint256)")));
     bytes4 constant SELECTOR_SAFETRANSFERFROM = bytes4(keccak256(bytes("safeTransferFrom(address,address,uint256)")));
@@ -207,11 +208,42 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             require(
                 keccak256(abi.encodePacked(_outcomes[i].data)) != keccak256(abi.encodePacked("")),
                 "outcomeData can't be empty"
-            );}
+            );
+            if (_outcomes[i].isLimitedReward) {
+                require(_outcomes[i].totalReward > 0, "Insufficient token reward amount");
+            }}
         }
         outcomes._set(_outcomes);
+        isAvailableReward = 1;
 
         emit OutcomeSet(_outcomes);
+    }
+
+    // check if quest has sufficient reward amount for Quester to claim
+    function _checkSufficientReward() private {
+        for (uint i = 0; i < outcomes._length(); i++)
+        {
+            DQuestStructLib.Outcome memory outcome = outcomes._getOutcome(i);
+            if (outcome.isLimitedReward == false) {
+                isAvailableReward = 1;
+                break;
+            }
+            else if (outcome.isLimitedReward && outcome.totalReward > 0)
+            {
+                isAvailableReward = 1;
+                break;
+            }
+            else {
+                isAvailableReward = 0;
+            }
+        }
+    }
+
+    // get the Reward status
+    function isRewardAvailable() public view returns(bool) {
+        if (isAvailableReward == 1) 
+            return true;
+        return false;
     }
 
     /**
@@ -221,17 +253,24 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     */
     function executeQuestOutcome(address _quester) external override whenActive nonReentrant {
         require(questerProgresses[_quester] == QuesterProgress.Completed, "Quester hasn't completed the Quest");
+        require(isRewardAvailable(), "The Quest's run out of Reward");
            for (uint256 i = 0; i < outcomes._length(); i++) {
             DQuestStructLib.Outcome memory outcome = outcomes._getOutcome(i);
             if (outcome.isNative) {
-                _executeNativeOutcome(_quester, outcome);
+                outcome.totalReward = _executeNativeOutcome(_quester, outcome);
+                outcomes._replace(i, outcome);
             }
+            // If one of the Outcome has run out of Reward
+            if (outcome.isLimitedReward && outcome.totalReward == 0)
+            {
+                continue;
+            } 
             if (outcome.functionSelector == SELECTOR_TRANSFERFROM) {
-                _executeERC20Outcome(_quester, outcome);
+                outcome.totalReward = _executeERC20Outcome(_quester, outcome);
+                outcomes._replace(i, outcome); 
             }
             if (outcome.functionSelector == SELECTOR_SAFETRANSFERFROM) {
-                (bytes memory newData) = _executeERC721Outcome(_quester, outcome);
-                outcome.data = newData;
+                (outcome.data, outcome.totalReward) = _executeERC721Outcome(_quester, outcome);
                 outcomes._replace(i, outcome);
             }
             if (outcome.functionSelector == SELECTOR_SBTMINT) {
@@ -241,12 +280,14 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
                 _executeNFTStandardOutcome(_quester, outcome);
             }
         }
+        _checkSufficientReward();
         questerProgresses[_quester] = QuesterProgress.Rewarded;
         emit OutcomeExecuted(_quester);  
     }
 
     function _executeERC20Outcome(address _quester, DQuestStructLib.Outcome memory outcome)
         internal
+        returns(uint256 totalRewardLeft)
     {
         address spender;
         uint256 value;
@@ -262,6 +303,9 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         );
 
         require(success, string(response));
+
+        uint256 _totalRewardLeft = outcome.totalReward - value;
+        return _totalRewardLeft;
     }
 
     /**
@@ -274,7 +318,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     */
     function _executeERC721Outcome(address _quester, DQuestStructLib.Outcome memory outcome)
         internal
-        returns (bytes memory newData)
+        returns (bytes memory newData, uint256 totalRewardLeft)
     {
         address spender;
         uint256 tokenId;
@@ -289,11 +333,12 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             abi.encodeWithSelector(SELECTOR_SAFETRANSFERFROM, spender, _quester, tokenId)
         );
         require(success, string(response));
-        tokenId++;
 
+        tokenId++;
+        uint256 _totalRewardLeft = outcome.totalReward - 1;
         bytes memory _newData = abi.encodeWithSelector(SELECTOR_SAFETRANSFERFROM, spender, _quester, tokenId);
 
-        return (_newData);
+        return (_newData, _totalRewardLeft);
     }
 
     function _executeNFTStandardOutcome(address _quester, DQuestStructLib.Outcome memory outcome)
@@ -349,9 +394,13 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
 
     function _executeNativeOutcome(address _quester, DQuestStructLib.Outcome memory outcome)
         internal
+        returns(uint256 totalRewardLeft)
     {
         (bool success, bytes memory response) = payable(_quester).call{value: outcome.nativeAmount}("");
         require(success, string(response));
+
+        uint256 _totalRewardLeft = outcome.totalReward - outcome.nativeAmount;
+        return _totalRewardLeft;
     }
 
     receive() external payable {
