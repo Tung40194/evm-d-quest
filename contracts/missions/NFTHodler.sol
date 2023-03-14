@@ -30,7 +30,7 @@ contract NFThodler is IMission, Ownable {
     /**
      * To meet mission formula setup from Quest, decode MissionNode.data with the following schema
      * data schema: (address token_address, uint256 start_id, uint256 stop_id)
-    */
+     */
     function validateMission(
         address quester,
         DQuestStructLib.MissionNode calldata node
