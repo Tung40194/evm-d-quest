@@ -23,6 +23,7 @@ library DQuestStructLib {
         Retweet
     }
 
+    /// @notice MissionNode stands for a mission parameters
     /// @dev MisisonNode can be an operator or a mission with parameters defined inside of Slot0/Slot1 fields
     /// @param id The index of the node in the array of missionNodeFormula.
     /// @param isMission Is the node a mission or an operator
@@ -43,12 +44,21 @@ library DQuestStructLib {
         bytes[] data;
     }
 
-    // TODO Define clearer / To be discuss in https://git.baikal.io/can/can-evm-dquest/-/issues/9
+    /// @notice Outcome stands for each Outcome Reward for this Quest.
+    /// @param tokenAddress The token address reward for this Quest.
+    /// @param functionSelector The functionSelector to execute the Outcome.
+    /// @param data The first Outcome data formed for this Quest in case of token reward.
+    /// @param nativeAmount native reward for each Quester if successfully completed the Quest.
+    /// @param isNative To define if this Outcome reward is native coin.
+    /// @param totalReward The total reward for this Quest.
+    /// @param isLimited identify if this Outcome has limited reward amount.
     struct Outcome {
         address tokenAddress;
         bytes4 functionSelector;
         bytes data;
+        bool isNative;
         uint256 nativeAmount;
-        int256 tokenAmount;
+        bool isLimitedReward;
+        uint256 totalReward;
     }
 }
