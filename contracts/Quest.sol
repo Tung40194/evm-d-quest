@@ -3,15 +3,18 @@ pragma solidity 0.8.18;
 
 import "./lib/DQuestStructLib.sol";
 import "./lib/MissionFormula.sol";
+import "./lib/OutcomeManager.sol";
 import "./lib/NodeId2IteratorHelper.sol";
 import "./interface/IQuest.sol";
 import "./interface/IMission.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
-contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable {
+contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using MissionFormula for MissionFormula.efficientlyResetableFormula;
+    using OutcomeManager for OutcomeManager.efficientlyResetableOutcome;
     using mNodeId2Iterator for mNodeId2Iterator.ResetableId2iterator;
 
     // binary tree cycles detection helpers
@@ -21,11 +24,19 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
 
     // contract storage
     MissionFormula.efficientlyResetableFormula missionNodeFormulas;
+    OutcomeManager.efficientlyResetableOutcome outcomes;
     address[] allQuesters;
     mapping(address quester => QuesterProgress progress) questerProgresses;
     mapping(address quester => mapping(uint256 missionNodeId => bool isDone)) questerMissionsDone;
     uint256 startTimestamp;
     uint256 endTimestamp;
+    bool public isRewardAvailable;
+
+    bytes4 constant SELECTOR_TRANSFERFROM = bytes4(keccak256(bytes("transferFrom(address,address,uint256)")));
+    bytes4 constant SELECTOR_SAFETRANSFERFROM = bytes4(keccak256(bytes("safeTransferFrom(address,address,uint256)")));
+    bytes4 constant SELECTOR_NFTSTANDARDMINT =
+        bytes4(keccak256(bytes("mint(uint256,address[],uint256,uint256[],bytes32[])")));
+    bytes4 constant SELECTOR_SBTMINT = bytes4(keccak256(bytes("mint(address[],uint256)")));
 
     // utility mapping for NFT handler only
     mapping(address => mapping(uint256 => bool)) tokenUsed;
@@ -188,17 +199,207 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
      * @param _outcomes The list of possible outcomes to set.
      */
     function setOutcomes(DQuestStructLib.Outcome[] calldata _outcomes) public override onlyOwner {
-        // TODO
+        require(_outcomes.length > 0, "No outcome provided");
+        
+        for (uint256 i = 0; i < _outcomes.length; i++) {
+            if (_outcomes[i].isNative) {
+                require(_outcomes[i].nativeAmount > 0, "Insufficient native reward amount");
+            } else {
+            require(_outcomes[i].tokenAddress != address(0), "Outcome address is invalid");
+            require(_outcomes[i].functionSelector != 0, "functionSelector can't be empty");
+            require(
+                keccak256(abi.encodePacked(_outcomes[i].data)) != keccak256(abi.encodePacked("")),
+                "outcomeData can't be empty"
+            );
+            if (_outcomes[i].isLimitedReward) {
+                require(_outcomes[i].totalReward > 0, "Insufficient token reward amount");
+            }}
+        }
+        outcomes._set(_outcomes);
+        isRewardAvailable = true;
+
+        emit OutcomeSet(_outcomes);
+    }
+
+    // check if quest has sufficient reward amount for Quester to claim
+    function _checkSufficientReward() private {
+        for (uint i = 0; i < outcomes._length(); i++)
+        {
+            DQuestStructLib.Outcome memory outcome = outcomes._getOutcome(i);
+            if (outcome.isLimitedReward == false) {
+                isRewardAvailable = true;
+                break;
+            }
+            else if (outcome.isLimitedReward && outcome.totalReward > 0)
+            {
+                isRewardAvailable = true;
+                break;
+            }
+            else {
+                isRewardAvailable = false;
+            }
+        }
     }
 
     /**
-     * @dev Executes the quest outcome for the specified quester.
-     * Only the quest can call this function when the quest is active.
-     * @param _quester The address of the quester whose outcome to execute.
-     * @return result Whether the outcome was successfully executed.
-     */
-    function executeQuestOutcome(address _quester) external override whenActive returns (bool result) {
-        //TODO set questerProgresses[msg.sender] = QuesterProgress.Rewarded;
+    * @dev Executes the quest outcome for the specified quester.
+    * Only the quest can call this function when the quest is active.
+    * @param _quester The address of the quester whose outcome to execute.
+    */
+    function executeQuestOutcome(address _quester) external override whenActive nonReentrant {
+        require(questerProgresses[_quester] == QuesterProgress.Completed, "Quester hasn't completed the Quest");
+        require(isRewardAvailable, "The Quest's run out of Reward");
+           for (uint256 i = 0; i < outcomes._length(); i++) {
+            DQuestStructLib.Outcome memory outcome = outcomes._getOutcome(i);
+            if (outcome.isNative) {
+                outcome.totalReward = _executeNativeOutcome(_quester, outcome);
+                outcomes._replace(i, outcome);
+            }
+            // If one of the Outcome has run out of Reward
+            if (outcome.isLimitedReward && outcome.totalReward == 0)
+            {
+                continue;
+            } 
+            if (outcome.functionSelector == SELECTOR_TRANSFERFROM) {
+                outcome.totalReward = _executeERC20Outcome(_quester, outcome);
+                outcomes._replace(i, outcome); 
+            }
+            if (outcome.functionSelector == SELECTOR_SAFETRANSFERFROM) {
+                (outcome.data, outcome.totalReward) = _executeERC721Outcome(_quester, outcome);
+                outcomes._replace(i, outcome);
+            }
+            if (outcome.functionSelector == SELECTOR_SBTMINT) {
+                _executeSBTOutcome(_quester, outcome);
+            }
+            if (outcome.functionSelector == SELECTOR_NFTSTANDARDMINT) {
+                _executeNFTStandardOutcome(_quester, outcome);
+            }
+        }
+        _checkSufficientReward();
+        questerProgresses[_quester] = QuesterProgress.Rewarded;
+        emit OutcomeExecuted(_quester);  
+    }
+
+    function _executeERC20Outcome(address _quester, DQuestStructLib.Outcome memory outcome)
+        internal
+        returns(uint256 totalRewardLeft)
+    {
+        address spender;
+        uint256 value;
+        bytes memory data = outcome.data;
+
+        assembly {
+            spender := mload(add(data, 36))
+            value := mload(add(data, 100))
+        }
+
+        (bool success, bytes memory response) = outcome.tokenAddress.call(
+            abi.encodeWithSelector(SELECTOR_TRANSFERFROM, spender, _quester, value)
+        );
+
+        require(success, string(response));
+
+        uint256 _totalRewardLeft = outcome.totalReward - value;
+        return _totalRewardLeft;
+    }
+
+    /**
+    * @dev Executes the ERC721Outcome for the specified quester.
+    * It's currently implemented with 
+    * Admin: setApprovalForAll from Admin's balance
+    * tokenId: sequential tokenId with 1st tokenId passing to Outcome.data
+    * @param _quester The address of the quester whose outcome to execute.
+    * @return newData for Outcome Struct 
+    */
+    function _executeERC721Outcome(address _quester, DQuestStructLib.Outcome memory outcome)
+        internal
+        returns (bytes memory newData, uint256 totalRewardLeft)
+    {
+        address spender;
+        uint256 tokenId;
+        bytes memory data = outcome.data;
+
+        assembly {
+            spender := mload(add(data, 36))
+            tokenId := mload(add(data, 100))
+        }
+
+        (bool success, bytes memory response) = outcome.tokenAddress.call(
+            abi.encodeWithSelector(SELECTOR_SAFETRANSFERFROM, spender, _quester, tokenId)
+        );
+        require(success, string(response));
+
+        tokenId++;
+        uint256 _totalRewardLeft = outcome.totalReward - 1;
+        bytes memory _newData = abi.encodeWithSelector(SELECTOR_SAFETRANSFERFROM, spender, _quester, tokenId);
+
+        return (_newData, _totalRewardLeft);
+    }
+
+    function _executeNFTStandardOutcome(address _quester, DQuestStructLib.Outcome memory outcome)
+        internal
+    {
+        bytes memory data = outcome.data;
+        uint256 mintingConditionId;
+        uint256 amount;
+        address[] memory quester = new address[](1);
+        uint256[] memory clientIds;
+        bytes32[] memory merkleRoot = new bytes32[](1);
+
+        quester[0] = _quester;
+        merkleRoot[0] = 0x0000000000000000000000000000000000000000000000000000000000000000;
+
+        assembly {
+            mintingConditionId := mload(add(data, 164))
+            amount := mload(add(data, 228))
+        }
+
+        (bool success, bytes memory response) = outcome.tokenAddress.call(
+            abi.encodeWithSelector(
+                SELECTOR_NFTSTANDARDMINT,
+                mintingConditionId,
+                quester,
+                amount,
+                clientIds,
+                merkleRoot
+            )
+        );
+        
+        require(success, string(response));
+    }
+
+    function _executeSBTOutcome(address _quester, DQuestStructLib.Outcome memory outcome)
+        internal
+    {
+        bytes memory data = outcome.data;   
+        uint256 expiration;
+        address[] memory quester = new address[](1);
+        quester[0] = _quester;
+
+        assembly {
+            expiration := mload(add(data, 196))
+        }
+
+        (bool success, bytes memory response) = outcome.tokenAddress.call(
+            abi.encodeWithSelector(SELECTOR_SBTMINT, quester, expiration)
+        );
+
+        require(success, string(response));
+    }
+
+    function _executeNativeOutcome(address _quester, DQuestStructLib.Outcome memory outcome)
+        internal
+        returns(uint256 totalRewardLeft)
+    {
+        (bool success, bytes memory response) = payable(_quester).call{value: outcome.nativeAmount}("");
+        require(success, string(response));
+
+        uint256 _totalRewardLeft = outcome.totalReward - outcome.nativeAmount;
+        return _totalRewardLeft;
+    }
+
+    receive() external payable {
+        emit Received(msg.sender, msg.value);
     }
 
     // validate mission formula input
