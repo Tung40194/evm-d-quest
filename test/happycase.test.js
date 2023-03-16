@@ -78,6 +78,8 @@ describe("executing happy cases", () => {
     let questStart;
     let questEnd;
     let data;
+    let node;
+    let outcome;
 
 
     beforeEach(async () => {
@@ -99,51 +101,14 @@ describe("executing happy cases", () => {
         deployedNft2 = await nft2.deploy();
     });
 
-    it("create a quest", async () => {
+    it("create a quest with 1-node dummy mission formula", async () => {
 
         // building a formula directed binary tree
-        const node = {
-            id: 1,
-            isMission: false,
-            missionHandlerAddress: DONT_CARE_ADDRESS,
-            oracleAddress: DONT_CARE_ADDRESS,
-            operatorType: AND,
-            leftNode: 0,
-            rightNode: 0,
-            data: DONT_CARE_ABR_BYTES
-        };
-        
-        const node1 = [
-            node.id,
-            node.isMission,
-            node.missionHandlerAddress,
-            node.oracleAddress,
-            node.operatorType,
-            node.leftNode,
-            node.rightNode,
-            node.data
-        ];
+        const node1 = [1,false,DONT_CARE_ADDRESS,DONT_CARE_ADDRESS,AND,0,0,DONT_CARE_ABR_BYTES];
 
         // building outcomes
-        const outcome = {
-            tokenAddress: DONT_CARE_ADDRESS,
-            functionSelector: DONT_CARE_FUNC_SELECTOR,
-            data: DONT_CARE_DATA,
-            isNative: DONT_CARE_BOOL,
-            nativeAmount: DONT_CARE_NUM,
-            isLimitedReward: DONT_CARE_BOOL,
-            totalReward: DONT_CARE_NUM
-        };
-        
-        const outcome1 = [
-            outcome.tokenAddress,
-            outcome.functionSelector,
-            outcome.data,
-            outcome.isNative,
-            outcome.nativeAmount,
-            outcome.isLimitedReward,
-            outcome.totalReward
-        ];
+        const outcome1 = [DONT_CARE_ADDRESS,DONT_CARE_FUNC_SELECTOR,DONT_CARE_DATA,DONT_CARE_BOOL,
+            DONT_CARE_NUM,DONT_CARE_BOOL,DONT_CARE_NUM];
 
         missionFormula = [node1];
         outcomes = [outcome1];
@@ -155,4 +120,28 @@ describe("executing happy cases", () => {
         // create a quest
         await deployedDquest.createQuest(missionFormula, outcomes, questStart, questEnd);
     });
+
+    it("create a quest with 5-node dummy mission formula", async () => {
+
+        // building a formula directed binary tree
+        const node1 = [1,false,DONT_CARE_ADDRESS,DONT_CARE_ADDRESS,AND,2,3,DONT_CARE_ABR_BYTES];
+        const node2 = [2,false,DONT_CARE_ADDRESS,DONT_CARE_ADDRESS,AND,0,0,DONT_CARE_ABR_BYTES];
+        const node3 = [3,false,DONT_CARE_ADDRESS,DONT_CARE_ADDRESS,AND,4,5,DONT_CARE_ABR_BYTES];
+        const node4 = [4,false,DONT_CARE_ADDRESS,DONT_CARE_ADDRESS,AND,0,0,DONT_CARE_ABR_BYTES];
+        const node5 = [5,false,DONT_CARE_ADDRESS,DONT_CARE_ADDRESS,AND,0,0,DONT_CARE_ABR_BYTES];
+        missionFormula = [node1, node2, node3, node4, node5];
+
+        // building outcomes
+        const outcome1 = [DONT_CARE_ADDRESS,DONT_CARE_FUNC_SELECTOR,DONT_CARE_DATA,DONT_CARE_BOOL,
+            DONT_CARE_NUM,DONT_CARE_BOOL,DONT_CARE_NUM];
+        outcomes = [outcome1];
+
+        currentTimeStamp = await getCurrentBlockTimestamp();
+        questStart = currentTimeStamp + 1000;
+        questEnd = questStart + 3000;
+
+        // create a quest
+        await deployedDquest.createQuest(missionFormula, outcomes, questStart, questEnd);
+    });
+
 });
