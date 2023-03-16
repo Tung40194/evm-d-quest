@@ -83,6 +83,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
      * @notice This function can only be called during the initialization phase of the contract.
      * @notice Check docstrings of setMissionNodeFormulas carefully
      * @param nodes The array of mission nodes to set.
+     * @param outcomeList The array of outcomes to be executed.
      * @param questStartTime The timestamp at which the quest starts.
      * @param questEndTime The timestamp at which the quest ends.
      * Emits a `MissionNodeFormulasSet` event.
@@ -90,7 +91,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     function init(
         address owner,
         DQuestStructLib.MissionNode[] calldata nodes,
-        DQuestStructLib.Outcome[] calldata outcomes,
+        DQuestStructLib.Outcome[] calldata outcomeList,
         uint256 questStartTime,
         uint256 questEndTime
     ) external initializer {
@@ -99,7 +100,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         __Ownable_init();
         __Pausable_init();
         setMissionNodeFormulas(nodes);
-        setOutcomes(outcomes);
+        setOutcomes(outcomeList);
         // d.quest's transfering ownership to quest admin
         transferOwnership(owner);
         startTimestamp = questStartTime;
