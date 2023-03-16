@@ -43,7 +43,9 @@ const OutcomeTypes = [
     'address',
     'bytes4',
     'bytes',
+    'bool',
     'uint256',
+    'bool',
     'uint256'
 ];
 
@@ -116,42 +118,35 @@ describe("executing happy cases", () => {
             node.rightNode,
             node.data
         ];
-        
-        const nodeEncoded1 = web3.eth.abi.encodeParameters(missionNodeType, node1);
-
-        missionFormula = [
-            nodeEncoded1,
-            //{2, true, deployedMission1.address, ORACLE, DONT_CARE_OPERATOR, 0, 0, data}, // Mission 1
-            //{3, true, deployedMission2.address, ORACLE, DONT_CARE_OPERATOR, 0, 0, data} // Mission 2
-        ];
 
         // building outcomes
         const outcome = {
             tokenAddress: DONT_CARE_ADDRESS,
             functionSelector: DONT_CARE_FUNC_SELECTOR,
             data: DONT_CARE_DATA,
+            isNative: DONT_CARE_BOOL,
             nativeAmount: DONT_CARE_NUM,
-            tokenAmount: DONT_CARE_NUM
+            isLimitedReward: DONT_CARE_BOOL,
+            totalReward: DONT_CARE_NUM
         };
         
         const outcome1 = [
             outcome.tokenAddress,
             outcome.functionSelector,
             outcome.data,
+            outcome.isNative,
             outcome.nativeAmount,
-            outcome.tokenAmount
-        ];
-        
-        const outcomeEncoded1 = web3.eth.abi.encodeParameters(OutcomeTypes, outcome1);
-
-        outcomes = [
-            outcomeEncoded1,
-            //{DONT_CARE_ADDRESS, DONT_CARE_NUM, DONT_CARE_DATA, DONT_CARE_NUM, DONT_CARE_NUM}
+            outcome.isLimitedReward,
+            outcome.totalReward
         ];
 
+        missionFormula = [node1];
+        outcomes = [outcome1];
         questStart = 1;
         questEnd = 1000;
 
+        // create a quest
         await deployedDquest.createQuest(missionFormula, outcomes, questStart, questEnd);
+
     });
 });
