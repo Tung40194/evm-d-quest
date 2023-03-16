@@ -5,7 +5,7 @@ const {
     expectRevert, // Assertions for transactions that should fail
     time,
     balance,
-  } = require("@openzeppelin/test-helpers");
+} = require("@openzeppelin/test-helpers");
 
 const { web3 } = require("@openzeppelin/test-helpers/src/setup");
 const crypto = require("crypto");
@@ -14,7 +14,7 @@ const { assert } = require("assert");
 const { expect } = require("chai");
 
 // random numbers below just for the right type
-//const DONT_CARE_ADDRESS = "0x072c7F4a8e9276f810727Ca68d3c99e6d8a72990";
+const DONT_CARE_ADDRESS = "0x072c7F4a8e9276f810727Ca68d3c99e6d8a72990";
 const DONT_CARE_BOOL = false;
 const DONT_CARE_NUM = 123;
 const DONT_CARE_FUNC_SELECTOR = "0x12341234"; //4 bytes
@@ -48,6 +48,13 @@ const OutcomeTypes = [
     'bool',
     'uint256'
 ];
+
+async function getCurrentBlockTimestamp() {
+    const blockNumber = await ethers.provider.getBlockNumber();
+    const block = await ethers.provider.getBlock(blockNumber);
+    return block.timestamp;
+}
+
 
 // Testing setMintingCondition function for multi-minting condition
 describe("executing happy cases", () => {
@@ -90,8 +97,6 @@ describe("executing happy cases", () => {
         deployedMission2 = await mission.deploy(deployedDquest.address);
         deployedNft1 = await nft1.deploy();
         deployedNft2 = await nft2.deploy();
-
-        DONT_CARE_ADDRESS = accounts[2].address;
     });
 
     it("create a quest", async () => {
@@ -103,8 +108,8 @@ describe("executing happy cases", () => {
             missionHandlerAddress: DONT_CARE_ADDRESS,
             oracleAddress: DONT_CARE_ADDRESS,
             operatorType: AND,
-            leftNode: 2,
-            rightNode: 3,
+            leftNode: 0,
+            rightNode: 0,
             data: DONT_CARE_ABR_BYTES
         };
         
@@ -142,11 +147,12 @@ describe("executing happy cases", () => {
 
         missionFormula = [node1];
         outcomes = [outcome1];
-        questStart = 1;
-        questEnd = 1000;
+
+        currentTimeStamp = await getCurrentBlockTimestamp();
+        questStart = currentTimeStamp + 1000;
+        questEnd = questStart + 3000;
 
         // create a quest
         await deployedDquest.createQuest(missionFormula, outcomes, questStart, questEnd);
-
     });
 });
