@@ -40,6 +40,8 @@ contract NFThodler is IMission, Ownable {
         uint256 startId = node.data[1].toUint256();
         uint256 stopId = node.data[2].toUint256();
 
+        require(startId <= stopId, "Invalid encoded token range");
+
         IERC721 tokenContract = IERC721(tokenAddr);
 
         //TODO Mountain merkle range may help saving GAS here
