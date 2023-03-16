@@ -93,7 +93,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         DQuestStructLib.Outcome[] calldata outcomes,
         uint256 questStartTime,
         uint256 questEndTime
-    ) external onlyInitializing {
+    ) external initializer {
         //TODO check carefully
         require(questStartTime < questEndTime, "Invalid quest lifetime");
         __Ownable_init();
