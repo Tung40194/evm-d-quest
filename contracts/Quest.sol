@@ -26,7 +26,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     MissionFormula.efficientlyResetableFormula missionNodeFormulas;
     OutcomeManager.efficientlyResetableOutcome outcomes;
     address[] allQuesters;
-    mapping(address quester => QuesterProgress progress) questerProgresses;
+    mapping(address quester => QuesterProgress progress) public questerProgresses;
     mapping(address quester => mapping(uint256 missionNodeId => bool isDone)) questerMissionsDone;
     uint256 startTimestamp;
     uint256 endTimestamp;
@@ -416,7 +416,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
                 if(nodes[i].oracleAddress == address(0x0))
                     revert("oracle address 0x0");
                 if((nodes[i].leftNode | nodes[i].rightNode) != 0)
-                    revert("leaf node left and right must be 0");
+                    revert("leaf node leftnode and rightnode must be 0");
                 if(nodes[i].data.length == 0)
                     revert("empty data");
             }
