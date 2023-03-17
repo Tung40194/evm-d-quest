@@ -195,7 +195,7 @@ describe("executing happy cases", () => {
   });
 
   it("create a quest with 3-working-node mission formula: M1 OR M2", async () => {
-    // building a formula directed binary tree
+    // building a formula - a directed binary tree
 
     /* Targeting NFT hodling mission handler
      * Mission: "quester is hodling an NFT id in range [start, stop]"
