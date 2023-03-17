@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.18;
+pragma solidity 0.8.17;
 
 import "./lib/DQuestStructLib.sol";
 import "./lib/MissionFormula.sol";
@@ -27,8 +27,8 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     MissionFormula.efficientlyResetableFormula private missionNodeFormulas;
     OutcomeManager.efficientlyResetableOutcome private outcomes;
     address[] private allQuesters;
-    mapping(address quester => QuesterProgress progress) public questerProgresses;
-    mapping(address quester => mapping(uint256 missionNodeId => bool isDone)) private questerMissionsDone;
+    mapping(address => QuesterProgress) public questerProgresses;
+    mapping(address => mapping(uint256 => bool)) private questerMissionsDone;
     uint256 public startTimestamp;
     uint256 public endTimestamp;
     bool public isRewardAvailable;
