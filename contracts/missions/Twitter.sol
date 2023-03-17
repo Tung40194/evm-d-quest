@@ -6,9 +6,11 @@ import "../lib/BytesConversion.sol";
 import "../interface/IMission.sol";
 import "../interface/IDQuest.sol";
 import "./ChainlinkMissionHandler.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Twitter is IMission, ChainlinkMissionHandler {
     using BytesConversion for bytes;
+    using Strings for address;
 
     // address of dquest contract
     address public dquestContract;
@@ -25,10 +27,9 @@ contract Twitter is IMission, ChainlinkMissionHandler {
 
     /**
      * To meet mission formula setup from Quest, decode MissionNode.data with the following schema
-     * data schema: (string requestHead, string twitterId, string userId)
+     * data schema: (string requestHead, string twitterId)
      *  - requestHead: the head of action request. It is either "like" or "follow"
      *  - twitterId: the tweet id
-     *  - userId: the user id
      */
     function validateMission(
         address quester,
@@ -38,12 +39,11 @@ contract Twitter is IMission, ChainlinkMissionHandler {
         IDQuest dquest = IDQuest(dquestContract);
         require(dquest.isQuest(msg.sender), "Caller is not a quest");
 
-        // start decoding node.data with schema: (string twitterId, string userId)
+        // start decoding node.data with schema: (string requestHead, string twitterId)
         string memory requestHead = node.data[0].toString();
         string memory twitterId = node.data[1].toString();
-        string memory userId = node.data[2].toString();
 
-        string memory apiUrl = string(abi.encodePacked(requestHead, "/", twitterId, "/", userId));
+        string memory apiUrl = string(abi.encodePacked(requestHead, "/", twitterId, "/", quester.toHexString()));
 
         // send request to chainlink oracle
         request(apiUrl);
