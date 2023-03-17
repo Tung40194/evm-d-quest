@@ -194,7 +194,7 @@ describe("executing happy cases", () => {
     await deployedDquest.setMission;
   });
 
-  it.only("create a quest with 3-working-node mission formula: M1 OR M2", async () => {
+  it("create a quest with 3-working-node mission formula: M1 OR M2", async () => {
     // building a formula directed binary tree
 
     /* Targeting NFT hodling mission handler
