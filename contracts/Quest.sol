@@ -17,8 +17,6 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     using MissionFormula for MissionFormula.efficientlyResetableFormula;
     using OutcomeManager for OutcomeManager.efficientlyResetableOutcome;
     using mNodeId2Iterator for mNodeId2Iterator.ResetableId2iterator;
-    using Strings for uint256;
-    using Strings for address;
 
     // binary tree cycles detection helpers
     mNodeId2Iterator.ResetableId2iterator id2itr1;
