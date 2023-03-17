@@ -312,6 +312,5 @@ describe("executing happy cases", () => {
     // now quester(accounts[7]) is elligible
     await pQuest.connect(accounts[7]).validateQuest();
     await expect(await pQuest.questerProgresses(accounts[7].address)).to.equal(COMPELETED);
-    
   });
 });
