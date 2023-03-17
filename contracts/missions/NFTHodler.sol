@@ -8,9 +8,14 @@ import "../interface/IQuest.sol";
 import "../interface/IDQuest.sol"; //TODO check d.quest
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract NFThodler is IMission, Ownable {
     using BytesConversion for bytes;
+    using Strings for uint256;
+    using Strings for address;
+
     address public tokenAddr;
     address public dquestContract;
 
@@ -44,14 +49,24 @@ contract NFThodler is IMission, Ownable {
         tokenAddr = node.data[0].toAddress();
         NFTrange.start = node.data[1].toUint256();
         NFTrange.stop = node.data[2].toUint256();
+        revert(tokenAddr.toHexString());
 
         IERC721 tokenContract = IERC721(tokenAddr);
 
         //TODO Mountain merkle range may help saving GAS here
         for (uint256 index = NFTrange.start; index <= NFTrange.stop; index++) {
             bool tokenInUse = quest.erc721GetTokenUsed(tokenAddr, index);
+            bool owned = false;
 
-            if (!tokenInUse && tokenContract.ownerOf(index) == quester) {
+            try tokenContract.ownerOf(index) returns (address owner) {
+                // if found, check if owner is the quester
+                owned = (quester == owner);
+            } catch {
+                // if index not valid, continue
+                continue;
+            }
+
+            if (!tokenInUse && owned) {
                 quest.setMissionStatus(quester, node.id, true);
                 quest.erc721SetTokenUsed(node.id, tokenAddr, index);
                 return true;

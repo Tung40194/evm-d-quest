@@ -11,11 +11,14 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using MissionFormula for MissionFormula.efficientlyResetableFormula;
     using OutcomeManager for OutcomeManager.efficientlyResetableOutcome;
     using mNodeId2Iterator for mNodeId2Iterator.ResetableId2iterator;
+    using Strings for uint256;
+    using Strings for address;
 
     // binary tree cycles detection helpers
     mNodeId2Iterator.ResetableId2iterator id2itr1;
@@ -26,7 +29,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     MissionFormula.efficientlyResetableFormula missionNodeFormulas;
     OutcomeManager.efficientlyResetableOutcome outcomes;
     address[] allQuesters;
-    mapping(address quester => QuesterProgress progress) questerProgresses;
+    mapping(address quester => QuesterProgress progress) public questerProgresses;
     mapping(address quester => mapping(uint256 missionNodeId => bool isDone)) questerMissionsDone;
     uint256 startTimestamp;
     uint256 endTimestamp;
@@ -113,6 +116,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         uint256 missionNodeId,
         bool isMissionDone
     ) external {
+        
         DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(
             msg.sender == node.missionHandlerAddress || msg.sender == node.oracleAddress,
@@ -144,7 +148,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         //TODO validate the binary tree's depth
         DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(nodeId);
         if (node.isMission) {
-            return validateMission(nodeId);
+            return validateMission(node.id);
         } else {
             bool leftResult = evaluateMissionFormulaTree(node.leftNode);
             bool rightResult = evaluateMissionFormulaTree(node.rightNode);
@@ -416,7 +420,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
                 if(nodes[i].oracleAddress == address(0x0))
                     revert("oracle address 0x0");
                 if((nodes[i].leftNode | nodes[i].rightNode) != 0)
-                    revert("leaf node left and right must be 0");
+                    revert("leaf node leftnode and rightnode must be 0");
                 if(nodes[i].data.length == 0)
                     revert("empty data");
             }
