@@ -26,7 +26,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     MissionFormula.efficientlyResetableFormula missionNodeFormulas;
     OutcomeManager.efficientlyResetableOutcome outcomes;
     address[] allQuesters;
-    mapping(address quester => QuesterProgress progress) questerProgresses;
+    mapping(address quester => QuesterProgress progress) public questerProgresses;
     mapping(address quester => mapping(uint256 missionNodeId => bool isDone)) questerMissionsDone;
     uint256 startTimestamp;
     uint256 endTimestamp;
@@ -83,6 +83,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
      * @notice This function can only be called during the initialization phase of the contract.
      * @notice Check docstrings of setMissionNodeFormulas carefully
      * @param nodes The array of mission nodes to set.
+     * @param outcomeList The array of outcomes to be executed.
      * @param questStartTime The timestamp at which the quest starts.
      * @param questEndTime The timestamp at which the quest ends.
      * Emits a `MissionNodeFormulasSet` event.
@@ -90,20 +91,21 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     function init(
         address owner,
         DQuestStructLib.MissionNode[] calldata nodes,
-        DQuestStructLib.Outcome[] calldata outcomes,
+        DQuestStructLib.Outcome[] calldata outcomeList,
         uint256 questStartTime,
         uint256 questEndTime
-    ) external onlyInitializing {
+    ) external initializer {
         //TODO check carefully
         require(questStartTime < questEndTime, "Invalid quest lifetime");
+        require(block.timestamp < questStartTime, "Starting time is over");
+        startTimestamp = questStartTime;
+        endTimestamp = questEndTime;
         __Ownable_init();
         __Pausable_init();
         setMissionNodeFormulas(nodes);
-        setOutcomes(outcomes);
+        setOutcomes(outcomeList);
         // d.quest's transfering ownership to quest admin
         transferOwnership(owner);
-        startTimestamp = questStartTime;
-        endTimestamp = questEndTime;
     }
 
     function setMissionStatus(
@@ -198,7 +200,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
      * Only the contract owner can call this function.
      * @param _outcomes The list of possible outcomes to set.
      */
-    function setOutcomes(DQuestStructLib.Outcome[] calldata _outcomes) public override onlyOwner {
+    function setOutcomes(DQuestStructLib.Outcome[] calldata _outcomes) public override onlyOwner whenInactive {
         require(_outcomes.length > 0, "No outcome provided");
         
         for (uint256 i = 0; i < _outcomes.length; i++) {
@@ -414,7 +416,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
                 if(nodes[i].oracleAddress == address(0x0))
                     revert("oracle address 0x0");
                 if((nodes[i].leftNode | nodes[i].rightNode) != 0)
-                    revert("leaf node left and right must be 0");
+                    revert("leaf node leftnode and rightnode must be 0");
                 if(nodes[i].data.length == 0)
                     revert("empty data");
             }

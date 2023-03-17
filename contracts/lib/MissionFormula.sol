@@ -68,7 +68,7 @@ library MissionFormula {
         _reset(f);
         if (nodes.length != 0) {
             for (uint256 idx = 0; idx < nodes.length; idx++) {
-                f.erf[f.rstPtr]._values[idx] = nodes[idx];
+                f.erf[f.rstPtr]._values[nodes[idx].id] = nodes[idx];
                 assert(f.erf[f.rstPtr]._keys.add(nodes[idx].id));
             }
             return true;
