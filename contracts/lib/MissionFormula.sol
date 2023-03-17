@@ -8,7 +8,6 @@ pragma solidity 0.8.18;
 
 import "./DQuestStructLib.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
  * @title MissionFormula
@@ -17,7 +16,6 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 library MissionFormula {
     // Use EnumerableSet to manage node ids
     using EnumerableSet for EnumerableSet.UintSet;
-    using Strings for uint256;
 
     /**
      * @dev Defines a formula data structure which stores mission nodes in a mapping.
