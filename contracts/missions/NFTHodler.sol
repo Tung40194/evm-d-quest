@@ -50,8 +50,17 @@ contract NFThodler is IMission, Ownable {
         //TODO Mountain merkle range may help saving GAS here
         for (uint256 index = NFTrange.start; index <= NFTrange.stop; index++) {
             bool tokenInUse = quest.erc721GetTokenUsed(tokenAddr, index);
+            bool owned = false;
 
-            if (!tokenInUse && tokenContract.ownerOf(index) == quester) {
+            try tokenContract.ownerOf(index) returns (address owner) {
+                // if found, check if owner is the quester
+                owned = (quester == owner);
+            } catch {
+                // if index not valid, continue
+                continue;
+            }
+
+            if (!tokenInUse && owned) {
                 quest.setMissionStatus(quester, node.id, true);
                 quest.erc721SetTokenUsed(node.id, tokenAddr, index);
                 return true;
