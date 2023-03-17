@@ -83,7 +83,11 @@ library OutcomeManager {
      * @param o efficientlyResetableOutcome to replace outcome to.
      * @param outcomeId Id of the outcome to replace. Must exist.
      */
-    function _replace(efficientlyResetableOutcome storage o, uint256 outcomeId, DQuestStructLib.Outcome memory outcome) internal {
+    function _replace(
+        efficientlyResetableOutcome storage o,
+        uint256 outcomeId,
+        DQuestStructLib.Outcome memory outcome
+    ) internal {
         require(o.ero[o.outPtr]._keys.contains(outcomeId), "Null Outcome");
         o.ero[o.outPtr]._values[outcomeId] = outcome;
     }

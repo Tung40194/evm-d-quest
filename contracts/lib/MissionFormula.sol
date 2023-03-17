@@ -38,19 +38,17 @@ library MissionFormula {
     }
 
     // check if nodeid is the root of the tree
-    function _isRoot(efficientlyResetableFormula storage f, uint256 nodeId) private view returns(bool) {
+    function _isRoot(efficientlyResetableFormula storage f, uint256 nodeId) private view returns (bool) {
         require(f.erf[f.rstPtr]._keys.contains(nodeId), "Null node");
         Formula storage formula = f.erf[f.rstPtr];
         uint256 len = formula._keys.length();
-        for(uint256 index = 0; index < len; index ++) {
+        for (uint256 index = 0; index < len; index++) {
             uint256 key = formula._keys.at(index);
             DQuestStructLib.MissionNode memory node = formula._values[key];
             // if it is node to be checked, continue
-            if (node.id == nodeId) 
-                continue;
+            if (node.id == nodeId) continue;
             // if node is a child node, node is not a root node
-            if (node.leftNode == nodeId || node.rightNode == nodeId)
-                return false;
+            if (node.leftNode == nodeId || node.rightNode == nodeId) return false;
         }
         return true;
     }
@@ -83,7 +81,7 @@ library MissionFormula {
      */
     function _reset(efficientlyResetableFormula storage f) private {
         // inc pointer to reset mapping; omit id #0
-        f.rstPtr ++;
+        f.rstPtr++;
     }
 
     /**
@@ -95,7 +93,7 @@ library MissionFormula {
     function _getNode(
         efficientlyResetableFormula storage f,
         uint256 nodeId
-    ) internal view returns(DQuestStructLib.MissionNode memory) {
+    ) internal view returns (DQuestStructLib.MissionNode memory) {
         require(f.erf[f.rstPtr]._keys.contains(nodeId), "Null node");
         return f.erf[f.rstPtr]._values[nodeId];
     }
