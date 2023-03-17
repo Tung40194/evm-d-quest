@@ -13,7 +13,7 @@ library BytesConversion {
 
     function toAddress(bytes memory data) internal pure returns (address addr) {
         assembly {
-            addr := mload(add(data, 20))
+            addr := mload(add(data, 32))
         }
     }
 

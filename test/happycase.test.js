@@ -254,8 +254,6 @@ describe("executing happy cases", () => {
         start = web3.eth.abi.encodeParameter('uint256', '1');
         end = web3.eth.abi.encodeParameter('uint256', '10');
         data = [addr, start, end];
-        console.log(">>>deployedNft1.address: ", deployedNft1.address)
-        console.log(">>>addr: ", addr)
         const node2 = [2,true,deployedMission.address,DONT_CARE_ADDRESS,DONT_CARE_OPERATOR,0,0,data];
 
         addr = web3.eth.abi.encodeParameter('address', deployedNft2.address);

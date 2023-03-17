@@ -49,7 +49,6 @@ contract NFThodler is IMission, Ownable {
         tokenAddr = node.data[0].toAddress();
         NFTrange.start = node.data[1].toUint256();
         NFTrange.stop = node.data[2].toUint256();
-        revert(tokenAddr.toHexString());
 
         IERC721 tokenContract = IERC721(tokenAddr);
 
