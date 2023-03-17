@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.18;
+pragma solidity 0.8.17;
 
 import "./lib/DQuestStructLib.sol";
 import "./lib/MissionFormula.sol";
@@ -19,24 +19,23 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     using mNodeId2Iterator for mNodeId2Iterator.ResetableId2iterator;
 
     // binary tree cycles detection helpers
-    mNodeId2Iterator.ResetableId2iterator id2itr1;
-    mNodeId2Iterator.ResetableId2iterator id2itr2;
-    uint256 formulaRootNodeId;
+    mNodeId2Iterator.ResetableId2iterator private id2itr1;
+    mNodeId2Iterator.ResetableId2iterator private id2itr2;
+    uint256 private formulaRootNodeId;
 
     // contract storage
-    MissionFormula.efficientlyResetableFormula missionNodeFormulas;
-    OutcomeManager.efficientlyResetableOutcome outcomes;
-    address[] allQuesters;
-    mapping(address quester => QuesterProgress progress) public questerProgresses;
-    mapping(address quester => mapping(uint256 missionNodeId => bool isDone)) questerMissionsDone;
-    uint256 startTimestamp;
-    uint256 endTimestamp;
+    MissionFormula.efficientlyResetableFormula private missionNodeFormulas;
+    OutcomeManager.efficientlyResetableOutcome private outcomes;
+    address[] private allQuesters;
+    mapping(address => QuesterProgress) public questerProgresses;
+    mapping(address => mapping(uint256 => bool)) private questerMissionsDone;
+    uint256 public startTimestamp;
+    uint256 public endTimestamp;
     bool public isRewardAvailable;
 
     bytes4 constant SELECTOR_TRANSFERFROM = bytes4(keccak256(bytes("transferFrom(address,address,uint256)")));
     bytes4 constant SELECTOR_SAFETRANSFERFROM = bytes4(keccak256(bytes("safeTransferFrom(address,address,uint256)")));
-    bytes4 constant SELECTOR_NFTSTANDARDMINT =
-        bytes4(keccak256(bytes("mint(uint256,address[],uint256,uint256[],bytes32[])")));
+    bytes4 constant SELECTOR_NFTSTANDARDMINT = bytes4(keccak256(bytes("mint(uint256,address[],uint256,uint256[],bytes32[])")));
     bytes4 constant SELECTOR_SBTMINT = bytes4(keccak256(bytes("mint(address[],uint256)")));
 
     // utility mapping for NFT handler only
@@ -118,7 +117,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(
             msg.sender == node.missionHandlerAddress || msg.sender == node.oracleAddress,
-            "Can not update cross-mission states"
+            "States update not allowed"
         );
         require(questerProgresses[quester] != QuesterProgress.NotEnrolled, "Not a quester");
         questerMissionsDone[quester][missionNodeId] = isMissionDone;
@@ -207,16 +206,16 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         
         for (uint256 i = 0; i < _outcomes.length; i++) {
             if (_outcomes[i].isNative) {
-                require(_outcomes[i].nativeAmount > 0, "Insufficient native reward amount");
+                require(_outcomes[i].nativeAmount > 0, "Insufficient native reward");
             } else {
-            require(_outcomes[i].tokenAddress != address(0), "Outcome address is invalid");
-            require(_outcomes[i].functionSelector != 0, "functionSelector can't be empty");
-            require(
-                keccak256(abi.encodePacked(_outcomes[i].data)) != keccak256(abi.encodePacked("")),
-                "outcomeData can't be empty"
-            );
+                require(_outcomes[i].tokenAddress != address(0), "Outcome address is invalid");
+                require(_outcomes[i].functionSelector != 0, "functionSelector can't be empty");
+                require(
+                    keccak256(abi.encodePacked(_outcomes[i].data)) != keccak256(abi.encodePacked("")),
+                    "outcomeData can't be empty"
+                );
             if (_outcomes[i].isLimitedReward) {
-                require(_outcomes[i].totalReward > 0, "Insufficient token reward amount");
+                require(_outcomes[i].totalReward > 0, "Insufficient token reward");
             }}
         }
         outcomes._set(_outcomes);
@@ -251,9 +250,9 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     * @param _quester The address of the quester whose outcome to execute.
     */
     function executeQuestOutcome(address _quester) external override whenActive nonReentrant {
-        require(questerProgresses[_quester] == QuesterProgress.Completed, "Quester hasn't completed the Quest");
+        require(questerProgresses[_quester] == QuesterProgress.Completed, "Quest not completed");
         require(isRewardAvailable, "The Quest's run out of Reward");
-           for (uint256 i = 0; i < outcomes._length(); i++) {
+        for (uint256 i = 0; i < outcomes._length(); i++) {
             DQuestStructLib.Outcome memory outcome = outcomes._getOutcome(i);
             if (outcome.isNative) {
                 outcome.totalReward = _executeNativeOutcome(_quester, outcome);
@@ -418,13 +417,13 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
                 if(nodes[i].oracleAddress == address(0x0))
                     revert("oracle address 0x0");
                 if((nodes[i].leftNode | nodes[i].rightNode) != 0)
-                    revert("leaf node leftnode and rightnode must be 0");
+                    revert("leaf node's left/right node != 0");
                 if(nodes[i].data.length == 0)
                     revert("empty data");
             }
             for (uint256 j = i + 1; j < nodes.length; j++) {
                 if (nodes[i].id == nodes[j].id) {
-                    revert("MF1");
+                    revert("repetitive id");
                 }
             }
         }
@@ -434,7 +433,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
 
         //TODO Check for loops/cycles
         if(hasCycle(nodes, rootId))
-            revert("mission formula has cycles/loops");
+            revert("mission formula has cycles");
 
         formulaRootNodeId = rootId;
     }
@@ -495,7 +494,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
                 rootCount++;
                 rootNode = tree[i].id;
                 if (rootCount > 1)
-                    revert("tree contains more than one root node");
+                    revert("tree has several root nodes");
             }
         }
 
@@ -508,7 +507,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
 
     function erc721SetTokenUsed(uint256 missionNodeId, address addr, uint256 tokenId) external override {
         DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
-        require(msg.sender == node.missionHandlerAddress, "Can not update cross-mission states");
+        require(msg.sender == node.missionHandlerAddress, "States update not allowed");
         tokenUsed[addr][tokenId] = true;
     }
 

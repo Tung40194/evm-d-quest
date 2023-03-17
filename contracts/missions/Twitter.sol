@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.18;
+pragma solidity 0.8.17;
 
 import "../lib/DQuestStructLib.sol";
 import "../lib/BytesConversion.sol";
@@ -47,7 +47,7 @@ contract Twitter is IMission, ChainlinkMissionHandler {
 
         // send request to chainlink oracle
         request(apiUrl);
-        
+
         emit MissionValidated(quester, node);
 
         // this is off-chain mission, return false by default
