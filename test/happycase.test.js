@@ -27,6 +27,11 @@ const ORACLE = "0x5fB365a93B6F6db556c40c346ae14Bbd1dDAFB1E";
 const AND = 0;
 const OR = 1;
 
+const NOT_ENROLLED = 0;
+const IN_PROGRESS = 1;
+const COMPELETED = 2;
+const REWADRD = 3;
+
 const missionNodeType = ["uint256", "bool", "address", "address", "uint8", "uint256", "uint256", "bytes[]"];
 
 const OutcomeTypes = ["address", "bytes4", "bytes", "bool", "uint256", "bool", "uint256"];
@@ -286,24 +291,27 @@ describe("executing happy cases", () => {
     await advanceBlockTimestamp(20);
     quester = accounts[7].address;
     await expect(pQuest.connect(accounts[7]).addQuester()).to.emit(pQuest, "QuesterAdded").withArgs(quester);
+    await expect(await pQuest.questerProgresses(accounts[7].address)).to.equal(IN_PROGRESS);
 
     // distributing NFT1 and NFT2 to the quester
     const nft1I = await nft1.attach(deployedNft1.address);
     const nft2I = await nft2.attach(deployedNft2.address);
 
     // give quester id #1 from NFT 1
-    nft1I.connect(accounts[0]).safeMint(quester, "give quester id #1");
+    nft1I.connect(accounts[0]).safeMint(quester, "give quester id #0");
 
     // give quester 6 first ids from NFT2
+    nft2I.connect(accounts[0]).safeMint(quester, "give quester id #0");
     nft2I.connect(accounts[0]).safeMint(quester, "give quester id #1");
     nft2I.connect(accounts[0]).safeMint(quester, "give quester id #2");
     nft2I.connect(accounts[0]).safeMint(quester, "give quester id #3");
     nft2I.connect(accounts[0]).safeMint(quester, "give quester id #4");
     nft2I.connect(accounts[0]).safeMint(quester, "give quester id #5");
-    nft2I.connect(accounts[0]).safeMint(quester, "give quester id #6");
 
     owner = await nft2I.ownerOf(3);
     // now quester(accounts[7]) is elligible
-    result = await pQuest.connect(accounts[7]).validateQuest();
+    await pQuest.connect(accounts[7]).validateQuest();
+    await expect(await pQuest.questerProgresses(accounts[7].address)).to.equal(COMPELETED);
+    
   });
 });
