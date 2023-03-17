@@ -3,8 +3,8 @@ pragma solidity 0.8.18;
 
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
-import "./interface/IChainlinkMissionHandler.sol";
-import "./interface/IQuest.sol";
+import "../interface/IChainlinkMissionHandler.sol";
+import "../interface/IQuest.sol";
 
 abstract contract ChainlinkMissionHandler is IChainlinkMissionHandler, ChainlinkClient, ConfirmedOwner {
     using Chainlink for Chainlink.Request;
@@ -32,7 +32,7 @@ abstract contract ChainlinkMissionHandler is IChainlinkMissionHandler, Chainlink
     }
 
     /// @dev See {IChainlinkMissionHandler-request}
-    function request(string calldata apiUrl) external virtual override returns (bytes32 requestId) {
+    function request(string memory apiUrl) public virtual override returns (bytes32 requestId) {
         Chainlink.Request memory req = buildChainlinkRequest(job, address(this), this.fulfill.selector);
 
         // Set API url

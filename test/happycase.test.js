@@ -301,13 +301,10 @@ describe("executing happy cases", () => {
         nft2I.connect(accounts[0]).safeMint(quester, "give quester id #4");
         nft2I.connect(accounts[0]).safeMint(quester, "give quester id #5");
         nft2I.connect(accounts[0]).safeMint(quester, "give quester id #6");
-        console.log("mark4")
 
         owner = await nft2I.ownerOf(3);
-        console.log(">>>mark5: ", owner)
         // now quester(accounts[7]) is elligible
         result = await pQuest.connect(accounts[7]).validateQuest();
-        console.log(">>>result: ", result)
         
     });
 
