@@ -54,7 +54,11 @@ module.exports = {
     apiKey: process.env.SCAN_API_KEY
   },
   contractSizer: {
-    only: [""]
+    alphaSort: true,
+    disambiguatePaths: false,
+    runOnCompile: true,
+    strict: true,
+    only: [],
   },
   abiExporter: {
     path: "./abi",

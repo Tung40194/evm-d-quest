@@ -11,6 +11,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using MissionFormula for MissionFormula.efficientlyResetableFormula;
@@ -113,6 +114,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         uint256 missionNodeId,
         bool isMissionDone
     ) external {
+        
         DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(
             msg.sender == node.missionHandlerAddress || msg.sender == node.oracleAddress,
@@ -144,7 +146,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         //TODO validate the binary tree's depth
         DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(nodeId);
         if (node.isMission) {
-            return validateMission(nodeId);
+            return validateMission(node.id);
         } else {
             bool leftResult = evaluateMissionFormulaTree(node.leftNode);
             bool rightResult = evaluateMissionFormulaTree(node.rightNode);
