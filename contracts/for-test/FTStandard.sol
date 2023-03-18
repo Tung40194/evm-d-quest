@@ -23,11 +23,7 @@ contract FTStandard is ERC20, ERC20Burnable, AccessControlEnumerable {
     // @param _name name of the token
     // @param _symbol symbol of the token
     // @param _decimals decimals of the token
-    constructor(
-        string memory _name,
-        string memory _symbol,
-        uint8 _decimals
-    ) ERC20(_name, _symbol) {
+    constructor(string memory _name, string memory _symbol, uint8 _decimals) ERC20(_name, _symbol) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(MINTER_ROLE, msg.sender);
 
@@ -51,10 +47,7 @@ contract FTStandard is ERC20, ERC20Burnable, AccessControlEnumerable {
     // @dev Only MINTER_ROLE can mint and the length of _to and _amount array must be the same.
     // @param _to[] An array address of the receivers
     // @param _amount[] An array of amounts to mint per receiver
-    function mintBatch(address[] memory _to, uint256[] memory _amount)
-        public
-        onlyRole(MINTER_ROLE)
-    {
+    function mintBatch(address[] memory _to, uint256[] memory _amount) public onlyRole(MINTER_ROLE) {
         require(_to.length == _amount.length, "FS1");
         for (uint256 i = 0; i < _to.length; ++i) {
             mint(_to[i], _amount[i]);
@@ -64,10 +57,7 @@ contract FTStandard is ERC20, ERC20Burnable, AccessControlEnumerable {
     // @notice Transfer the DEFAULT_ADMIN_ROLE to another account
     // @dev Only DEFAULT_ADMIN_ROLE can transfer their default admin role to another account
     // @param _account Target address of the transfer.
-    function transferDefaultAdminRole(address _account)
-        public
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function transferDefaultAdminRole(address _account) public onlyRole(DEFAULT_ADMIN_ROLE) {
         _grantRole(DEFAULT_ADMIN_ROLE, _account);
         _revokeRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }

@@ -58,7 +58,7 @@ async function advanceBlockTimestamp(units) {
 
 // Testing setMintingCondition function for multi-minting condition
 describe("executing happy cases", () => {
-    beforeEach(async () => {
+  beforeEach(async () => {
     accounts = await ethers.getSigners();
     quest = await ethers.getContractFactory("Quest");
     dquest = await ethers.getContractFactory("DQuest");
@@ -85,7 +85,6 @@ describe("executing happy cases", () => {
 
     deployedFtStandard = await ftStandard.deploy("Reward Token Demo", "RTD", 0);
     console.log("| - Reward token contract deployed at: ", deployedFtStandard.address);
-
   });
 
   it("create a quest with 1-node dummy mission formula", async () => {
@@ -94,7 +93,15 @@ describe("executing happy cases", () => {
     missionFormula = [node1];
 
     // building outcomes
-    const outcome1 = [DONT_CARE_ADDRESS,DONT_CARE_FUNC_SELECTOR,DONT_CARE_DATA,DONT_CARE_BOOL,DONT_CARE_NUM,DONT_CARE_BOOL,DONT_CARE_NUM];
+    const outcome1 = [
+      DONT_CARE_ADDRESS,
+      DONT_CARE_FUNC_SELECTOR,
+      DONT_CARE_DATA,
+      DONT_CARE_BOOL,
+      DONT_CARE_NUM,
+      DONT_CARE_BOOL,
+      DONT_CARE_NUM
+    ];
     outcomes = [outcome1];
 
     currentTimeStamp = await getCurrentBlockTimestamp();
@@ -115,7 +122,15 @@ describe("executing happy cases", () => {
     missionFormula = [node1, node2, node3, node4, node5];
 
     // building outcomes
-    const outcome1 = [DONT_CARE_ADDRESS,DONT_CARE_FUNC_SELECTOR,DONT_CARE_DATA,DONT_CARE_BOOL,DONT_CARE_NUM,DONT_CARE_BOOL,DONT_CARE_NUM];
+    const outcome1 = [
+      DONT_CARE_ADDRESS,
+      DONT_CARE_FUNC_SELECTOR,
+      DONT_CARE_DATA,
+      DONT_CARE_BOOL,
+      DONT_CARE_NUM,
+      DONT_CARE_BOOL,
+      DONT_CARE_NUM
+    ];
     outcomes = [outcome1];
 
     currentTimeStamp = await getCurrentBlockTimestamp();
@@ -132,7 +147,15 @@ describe("executing happy cases", () => {
     missionFormula = [node1];
 
     // building outcomes
-    const outcome1 = [DONT_CARE_ADDRESS,DONT_CARE_FUNC_SELECTOR,DONT_CARE_DATA,DONT_CARE_BOOL,DONT_CARE_NUM,DONT_CARE_BOOL,DONT_CARE_NUM];
+    const outcome1 = [
+      DONT_CARE_ADDRESS,
+      DONT_CARE_FUNC_SELECTOR,
+      DONT_CARE_DATA,
+      DONT_CARE_BOOL,
+      DONT_CARE_NUM,
+      DONT_CARE_BOOL,
+      DONT_CARE_NUM
+    ];
     outcomes = [outcome1];
 
     currentTimeStamp = await getCurrentBlockTimestamp();
@@ -167,13 +190,13 @@ describe("executing happy cases", () => {
      * M1: own at least an NFT token in range [1,10] from address X
      * M2: own at least a token in range [5,30] from address Y
      * outcome: get 32 Ft token from address Z
-    */
+     */
 
-    /* 
+    /*
      * BUILDING A MISSION FORMULA - A DIRECTED BINARY TREE
      *
      * Again, mission formula is an array of the following type:
-     * 
+     *
      * struct MissionNode {
      *   uint256 id;
      *   bool isMission;
@@ -184,18 +207,18 @@ describe("executing happy cases", () => {
      *   uint256 rightNode;
      *   bytes[] data;
      * }
-     * 
+     *
      * Each node can either be a Mission or an operator and we need to give proper inputs to construct our formula: (M1 OR M2)
-     * 
+     *
      * We are going to need 3 nodes: M1, M2 and OR.
-     * 
+     *
      * M1 and M2 will point to NFT hodling mission handler, and the OR operator will just focuses on its ID and operatorType.
      *
      * Mission formula tree:
      *       OR
      *      /  \
      *    M1    M2
-     * 
+     *
      * M1: "holding an NFT in range [1,10] of a contract at address X"
      * M2: "holding an NFT in range [5, 30] of a contract at address Y"
      * OR: an OR operator
@@ -235,8 +258,8 @@ describe("executing happy cases", () => {
     /*
      * BUILDING OUTCOME
      * the outcome: 32 token RTD for anyone completed the quest (M1 OR M2)
-     * 
-    */
+     *
+     */
     // accounts[0] aka owner of FT standard will mint to account[3] 100 erc20 token RTD
     const ftstandardI = await ftStandard.attach(deployedFtStandard.address);
     const totalReward = 100;
@@ -249,27 +272,34 @@ describe("executing happy cases", () => {
     erc20mintSelector = "0x23b872dd";
 
     // `to` is dont care currently because it will be replaced by quester later anyway
-    data = web3.eth.abi.encodeFunctionCall({
-      name: 'transferFrom',
-      type: 'function',
-      inputs: [{
-          type: 'address',
-          name: 'from'
-      },{
-          type: 'address',
-          name: 'to'
-      },{
-        type: 'uint256',
-        name: 'amount'
-      }]
-  }, [accounts[3].address, DONT_CARE_ADDRESS, "32"]);
+    data = web3.eth.abi.encodeFunctionCall(
+      {
+        name: "transferFrom",
+        type: "function",
+        inputs: [
+          {
+            type: "address",
+            name: "from"
+          },
+          {
+            type: "address",
+            name: "to"
+          },
+          {
+            type: "uint256",
+            name: "amount"
+          }
+        ]
+      },
+      [accounts[3].address, DONT_CARE_ADDRESS, "32"]
+    );
 
     const outcome1 = [deployedFtStandard.address, erc20mintSelector, data, false, DONT_CARE_NUM, true, totalReward];
     outcomes = [outcome1];
     /*
      * START CREATING A QUEST
-     * 
-    */
+     *
+     */
     currentTimeStamp = await getCurrentBlockTimestamp();
     questStart = currentTimeStamp + 10;
     questEnd = questStart + 30;
@@ -289,8 +319,8 @@ describe("executing happy cases", () => {
 
     /*
      * DISTRIBUTING NFT1 AND NFT2 TO QUESTER
-     * 
-    */
+     *
+     */
     const nft1I = await nft1.attach(deployedNft1.address);
     const nft2I = await nft2.attach(deployedNft2.address);
 
@@ -307,8 +337,8 @@ describe("executing happy cases", () => {
 
     /*
      * VALIDADE (M1 OR M2) (ONLY QUESTER CAN DO THIS)
-     * 
-    */
+     *
+     */
 
     // now since mission formula is (M1 OR M2) so either one of the two being eligible will drive the whole quest validation true.
     // or simply speaking, quester(accounts[7]) is elligible and validation result should be marked as completed
@@ -317,17 +347,16 @@ describe("executing happy cases", () => {
 
     /*
      * REWARD SETTING UP. REWARD OWNER NEEDS TO APPROVE QUEST TO TRANSFER ALL HIS 100 RTD
-     * 
-    */
+     *
+     */
     await ftstandardI.connect(accounts[3]).approve(questProxy1Address, totalReward);
     await expect(await ftstandardI.allowance(accounts[3].address, questProxy1Address)).to.equal(totalReward);
-    
+
     /*
      * EXECUTE QUEST OUTCOME (ANYONE CAN DO THIS LET'S USE ACCOUNTS[4])
-     * 
-    */
-   await pQuest.connect(accounts[4]).executeQuestOutcome(quester);
-   await expect(await pQuest.questerProgresses(quester)).to.equal(REWADRDED);
-
+     *
+     */
+    await pQuest.connect(accounts[4]).executeQuestOutcome(quester);
+    await expect(await pQuest.questerProgresses(quester)).to.equal(REWADRDED);
   });
 });
