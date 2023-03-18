@@ -182,7 +182,7 @@ describe("executing happy cases", () => {
     await deployedDquest.setMission;
   });
 
-  it.only("create a quest with 3-working-node mission formula: M1 OR M2", async () => {
+  it("create a quest with 3-working-node mission formula: M1 OR M2", async () => {
     /*
      * SCRIPTING SUMMARY:
      *
@@ -260,9 +260,11 @@ describe("executing happy cases", () => {
      * the outcome: 32 token RTD for anyone completed the quest (M1 OR M2)
      *
      */
-    // accounts[0] aka owner of FT standard will mint to account[3] 100 erc20 token RTD
-    const ftstandardI = await ftStandard.attach(deployedFtStandard.address);
     const totalReward = 100;
+    const toBeRewarded = 32;
+    const ftstandardI = await ftStandard.attach(deployedFtStandard.address);
+
+    // accounts[0] aka owner of FT standard will mint to account[3] 100 erc20 token RTD
     await ftstandardI.connect(accounts[0]).mint(accounts[3].address, totalReward);
 
     // expect erc20 balance
@@ -291,13 +293,13 @@ describe("executing happy cases", () => {
           }
         ]
       },
-      [accounts[3].address, DONT_CARE_ADDRESS, "32"]
+      [accounts[3].address, DONT_CARE_ADDRESS, toBeRewarded.toString()]
     );
 
     const outcome1 = [deployedFtStandard.address, erc20mintSelector, data, false, DONT_CARE_NUM, true, totalReward];
     outcomes = [outcome1];
     /*
-     * START CREATING A QUEST
+     * START CREATING A QUEST WITH A LIFETIME 30 OF SECONDS IN 10 SECONDS
      *
      */
     currentTimeStamp = await getCurrentBlockTimestamp();
@@ -358,5 +360,7 @@ describe("executing happy cases", () => {
      */
     await pQuest.connect(accounts[4]).executeQuestOutcome(quester);
     await expect(await pQuest.questerProgresses(quester)).to.equal(REWADRDED);
+    // expect erc20 balance
+    await expect(await ftstandardI.balanceOf(quester)).to.equal(toBeRewarded);
   });
 });
