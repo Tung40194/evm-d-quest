@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-import "../lib/DQuestStructLib.sol";
+import "../lib/Types.sol";
 
 /// @title An interface for a Mission contract
 /// @notice Mission contract is used to verify certain mission logic and cache mission status
 /// @notice MUST define data schema to decode object node.data in validateMission() method
 interface IMission {
     //TODO just emit enough
-    event MissionValidated(address quester, DQuestStructLib.MissionNode node);
+    event MissionValidated(address quester, Types.MissionNode node);
 
     /**
      * @dev Validates the mission submitted.
@@ -16,8 +16,5 @@ interface IMission {
      * @param node The mission to be validated.
      * @return isComplete Returns validation result
      */
-    function validateMission(
-        address quester,
-        DQuestStructLib.MissionNode calldata node
-    ) external returns (bool isComplete);
+    function validateMission(address quester, Types.MissionNode calldata node) external returns (bool isComplete);
 }

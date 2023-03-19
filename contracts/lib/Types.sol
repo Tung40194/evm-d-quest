@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-library DQuestStructLib {
+library Types {
     /// @dev Defines the possible types of operators for a mission node.
     /// States:
     /// - And = All child nodes must evaluate to true for this node to be true.
@@ -9,18 +9,6 @@ library DQuestStructLib {
     enum OperatorType {
         AND,
         OR
-    }
-
-    /// @dev Defines the possible types of Tweet for a Twitter mission.
-    /// States:
-    /// - None = Not a Twitter mission.
-    /// - Like = Like Tweet mission.
-    /// - Share = Share Tweet mission.
-    /// - Retweet = Retweet Tweet mission.
-    enum TweetAction {
-        Like,
-        Share,
-        Retweet
     }
 
     /// @notice MissionNode stands for a mission parameters
@@ -60,5 +48,24 @@ library DQuestStructLib {
         uint256 nativeAmount;
         bool isLimitedReward;
         uint256 totalReward;
+    }
+}
+
+// A helper in validating input mission formula
+library mNodeId2Iterator {
+    struct ResetableId2iterator {
+        mapping(uint256 => mapping(uint256 => uint256)) rmap;
+        uint256 rst;
+    }
+
+    function _setIterators(ResetableId2iterator storage id2itr, Types.MissionNode[] memory nodes) internal {
+        id2itr.rst++;
+        for (uint256 index = 0; index < nodes.length; index++) {
+            id2itr.rmap[id2itr.rst][nodes[index].id] = index;
+        }
+    }
+
+    function _getIterator(ResetableId2iterator storage id2itr, uint256 nodeId) internal view returns (uint256) {
+        return id2itr.rmap[id2itr.rst][nodeId];
     }
 }
