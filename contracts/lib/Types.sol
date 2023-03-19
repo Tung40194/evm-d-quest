@@ -51,7 +51,6 @@ library Types {
     }
 }
 
-
 // A helper in validating input mission formula
 library mNodeId2Iterator {
     struct ResetableId2iterator {
