@@ -52,7 +52,7 @@ describe("Testing happy cases", () => {
     console.log("| - Reward token contract deployed at: ", deployedFtStandard.address);
   });
 
-  it("create a quest with 1-node dummy mission formula", async () => {
+  it("Should create a quest with 1-node dummy mission formula", async () => {
     // building a formula directed binary tree
     const node1 = [1, true, DONT_CARE_ADDRESS, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
     missionFormula = [node1];
