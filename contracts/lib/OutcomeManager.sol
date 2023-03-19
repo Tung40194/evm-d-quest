@@ -2,24 +2,24 @@
 pragma solidity 0.8.17;
 
 import "./Types.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 
 /**
  * @title OutcomeManager
  * @dev This library defines data structures and functions related to outcome for quest.
  */
 library OutcomeManager {
-    // Use EnumerableSet to manage node ids
-    using EnumerableSet for EnumerableSet.UintSet;
+    // Use EnumerableSetUpgradeable to manage node ids
+    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
 
     /**
      * @dev Defines a outcomes data structure which stores each outcome in a mapping.
      * @param _values Mapping to store outcome.
-     * @param _keys EnumerableSet to manage outcome ids.
+     * @param _keys EnumerableSetUpgradeable to manage outcome ids.
      */
     struct Outcomes {
         mapping(uint256 => Types.Outcome) _values;
-        EnumerableSet.UintSet _keys;
+        EnumerableSetUpgradeable.UintSet _keys;
     }
 
     /**
@@ -91,6 +91,6 @@ library OutcomeManager {
      * @return outcomeLength with the given efficientlyResetableOutcome.
      */
     function _length(efficientlyResetableOutcome storage o) internal view returns (uint256) {
-        return EnumerableSet.length(o.ero[o.outPtr]._keys);
+        return EnumerableSetUpgradeable.length(o.ero[o.outPtr]._keys);
     }
 }

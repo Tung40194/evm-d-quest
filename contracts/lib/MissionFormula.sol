@@ -2,24 +2,24 @@
 pragma solidity 0.8.17;
 
 import "./Types.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 
 /**
  * @title MissionFormula
  * @dev This library defines data structures and functions related to mission formulas.
  */
 library MissionFormula {
-    // Use EnumerableSet to manage node ids
-    using EnumerableSet for EnumerableSet.UintSet;
+    // Use EnumerableSetUpgradeable to manage node ids
+    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
 
     /**
      * @dev Defines a formula data structure which stores mission nodes in a mapping.
      * @param _values Mapping to store mission nodes.
-     * @param _keys EnumerableSet to manage node ids.
+     * @param _keys EnumerableSetUpgradeable to manage node ids.
      */
     struct Formula {
         mapping(uint256 => Types.MissionNode) _values;
-        EnumerableSet.UintSet _keys;
+        EnumerableSetUpgradeable.UintSet _keys;
     }
 
     /**
