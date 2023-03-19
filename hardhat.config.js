@@ -7,6 +7,8 @@ require("hardhat-gas-reporter");
 require("hardhat-contract-sizer");
 require("hardhat-abi-exporter");
 
+const privKeys = (process.env.PRIVATE_KEYS) ? process.env.PRIVATE_KEYS.split(' ') : undefined;
+
 module.exports = {
   solidity: {
     version: "0.8.17",
@@ -20,27 +22,27 @@ module.exports = {
   networks: {
     local: {
       url: process.env.ETH_ENDPOINT || "http://localhost:8545",
-      accounts: [process.env.PRIVATE_KEY]
+      accounts: privKeys
     },
     goerli: {
       url: `https://rpc.ankr.com/eth_goerli`,
       gasPrice: 1000000000,
-      accounts: [process.env.PRIVATE_KEY]
+      accounts: privKeys
     },
     mainnet: {
       url: `https://eth.llamarpc.com`,
       gasPrice: 14000000000,
-      accounts: [process.env.PRIVATE_KEY]
+      accounts: privKeys
     },
     mumbai: {
       url: "https://matic-mumbai.chainstacklabs.com",
       gasPrice: 30000000000,
-      accounts: [process.env.PRIVATE_KEY]
+      accounts: privKeys
     },
     polygon: {
       url: "https://polygon-rpc.com",
       gasPrice: 80000000000,
-      accounts: [process.env.PRIVATE_KEY]
+      accounts: privKeys
     }
   },
   gasReporter: {
