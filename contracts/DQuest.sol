@@ -26,7 +26,7 @@ contract DQuest is IDQuest, Initializable, OwnableUpgradeable {
     Beacon internal beacon;
     //TODO improve storage for quests/proxies and adminQuests
     // managing all quest/proxies addresses
-    EnumerableSetUpgradeable.AddressSet quests;
+    EnumerableSetUpgradeable.AddressSet private quests;
     //mapping user address to his created quests addresses
     mapping (address => EnumerableSetUpgradeable.AddressSet) private adminQuests;
 

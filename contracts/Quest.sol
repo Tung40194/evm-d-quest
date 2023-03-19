@@ -4,7 +4,6 @@ pragma solidity 0.8.17;
 import "./lib/Types.sol";
 import "./lib/MissionFormula.sol";
 import "./lib/OutcomeManager.sol";
-import "./lib/NodeId2IteratorHelper.sol";
 import "./interface/IQuest.sol";
 import "./interface/IMission.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
