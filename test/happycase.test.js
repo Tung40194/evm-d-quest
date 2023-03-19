@@ -13,9 +13,9 @@ const {
   IN_PROGRESS,
   COMPLETED,
   REWARDED
-} = require('./constants');
-  
-const { getCurrentBlockTimestamp, advanceBlockTimestamp } = require('./helpers');
+} = require("./constants");
+
+const { getCurrentBlockTimestamp, advanceBlockTimestamp } = require("./helpers");
 
 // Testing setMintingCondition function for multi-minting condition
 describe("Testing happy cases", () => {

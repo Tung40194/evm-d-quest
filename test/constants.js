@@ -19,6 +19,6 @@ module.exports = {
   REWARDED: 3,
 
   // define struct types for mission formula construction
-  missionNodeType: ["uint256", "bool", "address", "address", "uint8", "uint256", "uint256", "bytes[]"], 
+  missionNodeType: ["uint256", "bool", "address", "address", "uint8", "uint256", "uint256", "bytes[]"],
   outcomeTypes: ["address", "bytes4", "bytes", "bool", "uint256", "bool", "uint256"]
-}
+};
