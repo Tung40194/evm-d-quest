@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../lib/DQuestStructLib.sol";
+import "../lib/Types.sol";
 import "../lib/BytesConversion.sol";
 import "../interface/IMission.sol";
 import "../interface/IDQuest.sol";
@@ -33,7 +33,7 @@ contract Twitter is IMission, ChainlinkMissionHandler {
      */
     function validateMission(
         address quester,
-        DQuestStructLib.MissionNode calldata node
+        Types.MissionNode calldata node
     ) external returns (bool isComplete) {
         // ensure only quest contracts calling
         IDQuest dquest = IDQuest(dquestContract);

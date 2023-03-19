@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 import "./Quest.sol";
-import "./Beacon.sol";
+import "./lib/Beacon.sol";
 import "./interface/IDQuest.sol";
 
 contract DQuest is IDQuest, Initializable, OwnableUpgradeable {
@@ -17,8 +17,8 @@ contract DQuest is IDQuest, Initializable, OwnableUpgradeable {
     event QuestCreated(
         address proxyAddress,
         address owner,
-        DQuestStructLib.MissionNode[] nodes,
-        DQuestStructLib.Outcome[] outcomes,
+        Types.MissionNode[] nodes,
+        Types.Outcome[] outcomes,
         uint256 startTime,
         uint256 endTime
     );
@@ -45,8 +45,8 @@ contract DQuest is IDQuest, Initializable, OwnableUpgradeable {
     }
 
     function createQuest(
-        DQuestStructLib.MissionNode[] memory nodes,
-        DQuestStructLib.Outcome[] memory outcomes,
+        Types.MissionNode[] memory nodes,
+        Types.Outcome[] memory outcomes,
         uint256 startTime,
         uint256 endTime
     ) external virtual override {

@@ -6,7 +6,7 @@ pragma solidity 0.8.17;
 // MF2 - node(s) missing
 // MF3 - tree loops
 
-import "./DQuestStructLib.sol";
+import "./Types.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 /**
@@ -23,7 +23,7 @@ library MissionFormula {
      * @param _keys EnumerableSet to manage node ids.
      */
     struct Formula {
-        mapping(uint256 => DQuestStructLib.MissionNode) _values;
+        mapping(uint256 => Types.MissionNode) _values;
         EnumerableSet.UintSet _keys;
     }
 
@@ -44,7 +44,7 @@ library MissionFormula {
         uint256 len = formula._keys.length();
         for (uint256 index = 0; index < len; index++) {
             uint256 key = formula._keys.at(index);
-            DQuestStructLib.MissionNode memory node = formula._values[key];
+            Types.MissionNode memory node = formula._values[key];
             // if it is node to be checked, continue
             if (node.id == nodeId) continue;
             // if node is a child node, node is not a root node
@@ -61,7 +61,7 @@ library MissionFormula {
      */
     function _set(
         efficientlyResetableFormula storage f,
-        DQuestStructLib.MissionNode[] memory nodes
+        Types.MissionNode[] memory nodes
     ) internal returns (bool) {
         _reset(f);
         if (nodes.length != 0) {
@@ -93,7 +93,7 @@ library MissionFormula {
     function _getNode(
         efficientlyResetableFormula storage f,
         uint256 nodeId
-    ) internal view returns (DQuestStructLib.MissionNode memory) {
+    ) internal view returns (Types.MissionNode memory) {
         require(f.erf[f.rstPtr]._keys.contains(nodeId), "Null node");
         return f.erf[f.rstPtr]._values[nodeId];
     }

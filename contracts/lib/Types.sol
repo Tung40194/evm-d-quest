@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-library DQuestStructLib {
+library Types {
     /// @dev Defines the possible types of operators for a mission node.
     /// States:
     /// - And = All child nodes must evaluate to true for this node to be true.

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "../lib/DQuestStructLib.sol";
+import "../lib/Types.sol";
 
 interface IDQuest {
     /**
@@ -12,8 +12,8 @@ interface IDQuest {
      * @param endTime The end time of the new proxy contract.
      */
     function createQuest(
-        DQuestStructLib.MissionNode[] memory nodes,
-        DQuestStructLib.Outcome[] memory outcomes,
+        Types.MissionNode[] memory nodes,
+        Types.Outcome[] memory outcomes,
         uint256 startTime,
         uint256 endTime
     ) external;

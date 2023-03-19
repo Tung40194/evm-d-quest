@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./lib/DQuestStructLib.sol";
+import "./lib/Types.sol";
 import "./lib/MissionFormula.sol";
 import "./lib/OutcomeManager.sol";
 import "./lib/NodeId2IteratorHelper.sol";
@@ -90,8 +90,8 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
      */
     function init(
         address owner,
-        DQuestStructLib.MissionNode[] calldata nodes,
-        DQuestStructLib.Outcome[] calldata outcomeList,
+        Types.MissionNode[] calldata nodes,
+        Types.Outcome[] calldata outcomeList,
         uint256 questStartTime,
         uint256 questEndTime
     ) external initializer {
@@ -114,7 +114,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         bool isMissionDone
     ) external {
         
-        DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
+        Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(
             msg.sender == node.missionHandlerAddress || msg.sender == node.oracleAddress,
             "States update not allowed"
@@ -123,7 +123,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         questerMissionsDone[quester][missionNodeId] = isMissionDone;
     }
 
-    function setMissionNodeFormulas(DQuestStructLib.MissionNode[] calldata nodes)
+    function setMissionNodeFormulas(Types.MissionNode[] calldata nodes)
         public
         override
         onlyOwner
@@ -143,13 +143,13 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         uint256 nodeId
     ) private returns (bool) {
         //TODO validate the binary tree's depth
-        DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(nodeId);
+        Types.MissionNode memory node = missionNodeFormulas._getNode(nodeId);
         if (node.isMission) {
             return validateMission(node.id);
         } else {
             bool leftResult = evaluateMissionFormulaTree(node.leftNode);
             bool rightResult = evaluateMissionFormulaTree(node.rightNode);
-            if (node.operatorType == DQuestStructLib.OperatorType.AND) {
+            if (node.operatorType == Types.OperatorType.AND) {
                 return leftResult && rightResult;
             } else {
                 return leftResult || rightResult;
@@ -166,7 +166,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     function validateMission(uint256 missionNodeId) public override onlyQuester whenNotPaused returns (bool) {
-        DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
+        Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(node.isMission == true, "Not a mission");
         bool cache = questerMissionsDone[msg.sender][missionNodeId];
         // if false, proceed validation at mission handler contract
@@ -201,7 +201,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
      * Only the contract owner can call this function.
      * @param _outcomes The list of possible outcomes to set.
      */
-    function setOutcomes(DQuestStructLib.Outcome[] calldata _outcomes) public override onlyOwner whenInactive {
+    function setOutcomes(Types.Outcome[] calldata _outcomes) public override onlyOwner whenInactive {
         require(_outcomes.length > 0, "No outcome provided");
         
         for (uint256 i = 0; i < _outcomes.length; i++) {
@@ -228,7 +228,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     function _checkSufficientReward() private {
         for (uint i = 0; i < outcomes._length(); i++)
         {
-            DQuestStructLib.Outcome memory outcome = outcomes._getOutcome(i);
+            Types.Outcome memory outcome = outcomes._getOutcome(i);
             if (outcome.isLimitedReward == false) {
                 isRewardAvailable = true;
                 break;
@@ -253,7 +253,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         require(questerProgresses[_quester] == QuesterProgress.Completed, "Quest not completed");
         require(isRewardAvailable, "The Quest's run out of Reward");
         for (uint256 i = 0; i < outcomes._length(); i++) {
-            DQuestStructLib.Outcome memory outcome = outcomes._getOutcome(i);
+            Types.Outcome memory outcome = outcomes._getOutcome(i);
             if (outcome.isNative) {
                 outcome.totalReward = _executeNativeOutcome(_quester, outcome);
                 outcomes._replace(i, outcome);
@@ -283,7 +283,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         emit OutcomeExecuted(_quester);  
     }
 
-    function _executeERC20Outcome(address _quester, DQuestStructLib.Outcome memory outcome)
+    function _executeERC20Outcome(address _quester, Types.Outcome memory outcome)
         internal
         returns(uint256 totalRewardLeft)
     {
@@ -314,7 +314,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     * @param _quester The address of the quester whose outcome to execute.
     * @return newData for Outcome Struct 
     */
-    function _executeERC721Outcome(address _quester, DQuestStructLib.Outcome memory outcome)
+    function _executeERC721Outcome(address _quester, Types.Outcome memory outcome)
         internal
         returns (bytes memory newData, uint256 totalRewardLeft)
     {
@@ -339,7 +339,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         return (_newData, _totalRewardLeft);
     }
 
-    function _executeNFTStandardOutcome(address _quester, DQuestStructLib.Outcome memory outcome)
+    function _executeNFTStandardOutcome(address _quester, Types.Outcome memory outcome)
         internal
     {
         bytes memory data = outcome.data;
@@ -371,7 +371,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         require(success, string(response));
     }
 
-    function _executeSBTOutcome(address _quester, DQuestStructLib.Outcome memory outcome)
+    function _executeSBTOutcome(address _quester, Types.Outcome memory outcome)
         internal
     {
         bytes memory data = outcome.data;   
@@ -390,7 +390,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         require(success, string(response));
     }
 
-    function _executeNativeOutcome(address _quester, DQuestStructLib.Outcome memory outcome)
+    function _executeNativeOutcome(address _quester, Types.Outcome memory outcome)
         internal
         returns(uint256 totalRewardLeft)
     {
@@ -406,7 +406,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     // validate mission formula input
-    function validateFormulaInput(DQuestStructLib.MissionNode[] memory nodes) private {
+    function validateFormulaInput(Types.MissionNode[] memory nodes) private {
         require(nodes.length > 0, "formula input empty");
         // Check for repeated IDs
         for (uint256 i = 0; i < nodes.length; i++) {
@@ -439,7 +439,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     // detect Cycle in a directed binary tree
-    function hasCycle(DQuestStructLib.MissionNode[] memory nodes, uint256 rootNodeId) private returns(bool) {
+    function hasCycle(Types.MissionNode[] memory nodes, uint256 rootNodeId) private returns(bool) {
         bool[] memory visited = new bool[](nodes.length);
         id2itr1._setIterators(nodes);
         return hasCycleUtil(nodes, visited, rootNodeId);
@@ -447,11 +447,11 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
 
     // cycle detection helper
     function hasCycleUtil(
-        DQuestStructLib.MissionNode[] memory nodes,
+        Types.MissionNode[] memory nodes,
         bool[] memory visited,
         uint256 id
     ) private returns (bool) {
-        DQuestStructLib.MissionNode memory node = nodes[id2itr1._getIterator(id)];
+        Types.MissionNode memory node = nodes[id2itr1._getIterator(id)];
         visited[id2itr1._getIterator(id)] = true;
         if (node.leftNode != 0) {
             if (visited[id2itr1._getIterator(node.leftNode)]) {
@@ -473,7 +473,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     // support find root node of a binary tree
-    function findRoot(DQuestStructLib.MissionNode[] memory tree) private returns (uint256) {
+    function findRoot(Types.MissionNode[] memory tree) private returns (uint256) {
         uint256 n = tree.length;
         id2itr2._setIterators(tree);
         bool[] memory isChild = new bool[](n);
@@ -506,7 +506,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     function erc721SetTokenUsed(uint256 missionNodeId, address addr, uint256 tokenId) external override {
-        DQuestStructLib.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
+        Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(msg.sender == node.missionHandlerAddress, "States update not allowed");
         tokenUsed[addr][tokenId] = true;
     }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./DQuestStructLib.sol";
+import "./Types.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 /**
@@ -18,7 +18,7 @@ library OutcomeManager {
      * @param _keys EnumerableSet to manage outcome ids.
      */
     struct Outcomes {
-        mapping(uint256 => DQuestStructLib.Outcome) _values;
+        mapping(uint256 => Types.Outcome) _values;
         EnumerableSet.UintSet _keys;
     }
 
@@ -40,7 +40,7 @@ library OutcomeManager {
      */
     function _set(
         efficientlyResetableOutcome storage o,
-        DQuestStructLib.Outcome[] memory outcomes
+        Types.Outcome[] memory outcomes
     ) internal returns (bool) {
         _reset(o);
         if (outcomes.length != 0) {
@@ -64,7 +64,7 @@ library OutcomeManager {
     function _getOutcome(
         efficientlyResetableOutcome storage o,
         uint256 outcomeId
-    ) internal view returns (DQuestStructLib.Outcome memory) {
+    ) internal view returns (Types.Outcome memory) {
         require(o.ero[o.outPtr]._keys.contains(outcomeId), "Null Outcome");
         return o.ero[o.outPtr]._values[outcomeId];
     }
@@ -86,7 +86,7 @@ library OutcomeManager {
     function _replace(
         efficientlyResetableOutcome storage o,
         uint256 outcomeId,
-        DQuestStructLib.Outcome memory outcome
+        Types.Outcome memory outcome
     ) internal {
         require(o.ero[o.outPtr]._keys.contains(outcomeId), "Null Outcome");
         o.ero[o.outPtr]._values[outcomeId] = outcome;

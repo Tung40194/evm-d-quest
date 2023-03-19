@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./DQuestStructLib.sol";
+import "./Types.sol";
 
 library mNodeId2Iterator {
     struct ResetableId2iterator {
@@ -9,7 +9,7 @@ library mNodeId2Iterator {
         uint256 rst;
     }
 
-    function _setIterators(ResetableId2iterator storage id2itr, DQuestStructLib.MissionNode[] memory nodes) internal {
+    function _setIterators(ResetableId2iterator storage id2itr, Types.MissionNode[] memory nodes) internal {
         id2itr.rst++;
         for (uint256 index = 0; index < nodes.length; index++) {
             id2itr.rmap[id2itr.rst][nodes[index].id] = index;
