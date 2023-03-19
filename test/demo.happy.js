@@ -31,7 +31,7 @@ describe("Demo full flow", () => {
     address2 = "0x5fB365a93B6F6db556c40c346ae14Bbd1dDAFB1E";
     signer1 = provider.getSigner(address1);
     signer2 = provider.getSigner(address2);
-    console.log(provider)
+    console.log(provider);
     quest = await ethers.getContractFactory("Quest");
     dquest = await ethers.getContractFactory("DQuest");
     mission = await ethers.getContractFactory("NFThodler");
@@ -114,7 +114,7 @@ describe("Demo full flow", () => {
      *  - data1 = [X encoded, 1 encoded, 10 encoded]
      *  - data2 = [Y encoded, 5 encoded, 30 encoded]
      */
-    console.log("mark1")
+    console.log("mark1");
     const OR_node = [1, false, DONT_CARE_ADDRESS, DONT_CARE_ADDRESS, OR, 2, 3, DONT_CARE_ABR_BYTES];
 
     // encoding data for M1
@@ -141,13 +141,13 @@ describe("Demo full flow", () => {
     const totalReward = 100;
     const toBeRewarded = 32;
     const ftstandardI = await ftStandard.attach(deployedFtStandard.address);
-    console.log("mark2")
+    console.log("mark2");
     // address1 aka owner of FT standard will mint to itself 100 erc20 token RTD
     await ftstandardI.connect(signer1).mint(address1, totalReward);
-    console.log("mar3")
+    console.log("mar3");
     // expect erc20 balance
     await expect(await ftstandardI.balanceOf(address1)).to.equal(totalReward);
-    console.log("mark4")
+    console.log("mark4");
     // function selector of transferFrom(address from, address to, uint256 amount)
     erc20mintSelector = "0x23b872dd";
 
