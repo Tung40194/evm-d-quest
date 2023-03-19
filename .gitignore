@@ -13,9 +13,9 @@ cache
 artifacts
 
 #openzeppelin files
-.openzeppelin/unknown-*.json
-.openzeppelin/.session
-/.openzeppelin
+#.openzeppelin/unknown-*.json
+#.openzeppelin/.session
+#/.openzeppelin
 
 abi
 /package-lock.json
