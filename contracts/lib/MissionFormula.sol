@@ -59,10 +59,7 @@ library MissionFormula {
      * @param nodes Array of mission nodes to add to the formula.
      * @return Boolean indicating success.
      */
-    function _set(
-        efficientlyResetableFormula storage f,
-        Types.MissionNode[] memory nodes
-    ) internal returns (bool) {
+    function _set(efficientlyResetableFormula storage f, Types.MissionNode[] memory nodes) internal returns (bool) {
         _reset(f);
         if (nodes.length != 0) {
             for (uint256 idx = 0; idx < nodes.length; idx++) {

@@ -31,10 +31,7 @@ contract Twitter is IMission, ChainlinkMissionHandler {
      *  - requestHead: the head of action request. It is either "like" or "follow"
      *  - twitterId: the tweet id
      */
-    function validateMission(
-        address quester,
-        Types.MissionNode calldata node
-    ) external returns (bool isComplete) {
+    function validateMission(address quester, Types.MissionNode calldata node) external returns (bool isComplete) {
         // ensure only quest contracts calling
         IDQuest dquest = IDQuest(dquestContract);
         require(dquest.isQuest(msg.sender), "Caller is not a quest");

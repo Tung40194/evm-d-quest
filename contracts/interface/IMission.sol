@@ -16,8 +16,5 @@ interface IMission {
      * @param node The mission to be validated.
      * @return isComplete Returns validation result
      */
-    function validateMission(
-        address quester,
-        Types.MissionNode calldata node
-    ) external returns (bool isComplete);
+    function validateMission(address quester, Types.MissionNode calldata node) external returns (bool isComplete);
 }

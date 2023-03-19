@@ -27,10 +27,7 @@ contract NFThodler is IMission, Ownable {
      *  - start_id: the start of token id range (included)
      *  - stop_id: the stop of token id range (included)
      */
-    function validateMission(
-        address quester,
-        Types.MissionNode calldata node
-    ) external returns (bool isComplete) {
+    function validateMission(address quester, Types.MissionNode calldata node) external returns (bool isComplete) {
         IDQuest dquest = IDQuest(dquestContract);
         require(dquest.isQuest(msg.sender), "Caller is not a quest");
         IQuest quest = IQuest(msg.sender);

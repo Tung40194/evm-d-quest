@@ -38,10 +38,7 @@ library OutcomeManager {
      * @param outcomes Array of outcomes.
      * @return Boolean indicating success.
      */
-    function _set(
-        efficientlyResetableOutcome storage o,
-        Types.Outcome[] memory outcomes
-    ) internal returns (bool) {
+    function _set(efficientlyResetableOutcome storage o, Types.Outcome[] memory outcomes) internal returns (bool) {
         _reset(o);
         if (outcomes.length != 0) {
             for (uint256 idx = 0; idx < outcomes.length; idx++) {
@@ -83,11 +80,7 @@ library OutcomeManager {
      * @param o efficientlyResetableOutcome to replace outcome to.
      * @param outcomeId Id of the outcome to replace. Must exist.
      */
-    function _replace(
-        efficientlyResetableOutcome storage o,
-        uint256 outcomeId,
-        Types.Outcome memory outcome
-    ) internal {
+    function _replace(efficientlyResetableOutcome storage o, uint256 outcomeId, Types.Outcome memory outcome) internal {
         require(o.ero[o.outPtr]._keys.contains(outcomeId), "Null Outcome");
         o.ero[o.outPtr]._values[outcomeId] = outcome;
     }
