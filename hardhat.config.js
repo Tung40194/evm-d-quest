@@ -20,27 +20,27 @@ module.exports = {
   networks: {
     local: {
       url: process.env.ETH_ENDPOINT || "http://localhost:8545",
-      accounts: process.env.PRIVATE_KEY
+      accounts: [process.env.PRIVATE_KEY]
     },
     goerli: {
       url: `https://rpc.ankr.com/eth_goerli`,
       gasPrice: 1000000000,
-      accounts: process.env.PRIVATE_KEY
+      accounts: [process.env.PRIVATE_KEY]
     },
     mainnet: {
       url: `https://eth.llamarpc.com`,
       gasPrice: 14000000000,
-      accounts: process.env.PRIVATE_KEY
+      accounts: [process.env.PRIVATE_KEY]
     },
     mumbai: {
       url: "https://matic-mumbai.chainstacklabs.com",
       gasPrice: 30000000000,
-      accounts: process.env.PRIVATE_KEY
+      accounts: [process.env.PRIVATE_KEY]
     },
     polygon: {
       url: "https://polygon-rpc.com",
       gasPrice: 80000000000,
-      accounts: process.env.PRIVATE_KEY
+      accounts: [process.env.PRIVATE_KEY]
     }
   },
   gasReporter: {
