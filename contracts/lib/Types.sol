@@ -11,18 +11,6 @@ library Types {
         OR
     }
 
-    /// @dev Defines the possible types of Tweet for a Twitter mission.
-    /// States:
-    /// - None = Not a Twitter mission.
-    /// - Like = Like Tweet mission.
-    /// - Share = Share Tweet mission.
-    /// - Retweet = Retweet Tweet mission.
-    enum TweetAction {
-        Like,
-        Share,
-        Retweet
-    }
-
     /// @notice MissionNode stands for a mission parameters
     /// @dev MisisonNode can be an operator or a mission with parameters defined inside of Slot0/Slot1 fields
     /// @param id The index of the node in the array of missionNodeFormula.

@@ -1,11 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-// Error Codes:
-// MF1 - repetitive id
-// MF2 - node(s) missing
-// MF3 - tree loops
-
 import "./Types.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
