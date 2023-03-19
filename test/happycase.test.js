@@ -1,63 +1,28 @@
-const {
-  BN, // Big Number support
-  constants, // Common constants, like the zero address and largest integers
-  expectEvent, // Assertions for emitted events
-  expectRevert, // Assertions for transactions that should fail
-  time,
-  balance
-} = require("@openzeppelin/test-helpers");
-
-const { web3 } = require("@openzeppelin/test-helpers/src/setup");
-const crypto = require("crypto");
-const { ethers } = require("hardhat");
-const { assert } = require("assert");
 const { expect } = require("chai");
-
-// random numbers below just for the right type
-const DONT_CARE_ADDRESS = "0x072c7F4a8e9276f810727Ca68d3c99e6d8a72990";
-const DONT_CARE_BOOL = false;
-const DONT_CARE_NUM = 123;
-const DONT_CARE_FUNC_SELECTOR = "0x12341234"; //4 bytes
-const DONT_CARE_OPERATOR = 1;
-const DONT_CARE_ABR_BYTES = ["0x012345", "0x6789abcdef"];
-const DONT_CARE_DATA = "0xabcdef";
-
-const ORACLE = "0x5fB365a93B6F6db556c40c346ae14Bbd1dDAFB1E";
-
-const AND = 0;
-const OR = 1;
-
-const NOT_ENROLLED = 0;
-const IN_PROGRESS = 1;
-const COMPELETED = 2;
-const REWADRDED = 3;
-
-const missionNodeType = ["uint256", "bool", "address", "address", "uint8", "uint256", "uint256", "bytes[]"];
-
-const OutcomeTypes = ["address", "bytes4", "bytes", "bool", "uint256", "bool", "uint256"];
-
-async function getCurrentBlockTimestamp() {
-  const blockNumber = await ethers.provider.getBlockNumber();
-  const block = await ethers.provider.getBlock(blockNumber);
-  return block.timestamp;
-}
-
-async function advanceBlockTimestamp(units) {
-  // Get the current block timestamp
-  const blockNumber = await ethers.provider.getBlockNumber();
-  const block = await ethers.provider.getBlock(blockNumber);
-  const currentTimestamp = block.timestamp;
-
-  // Set the next block timestamp to the specified number of units ahead of the current timestamp
-  const nextTimestamp = currentTimestamp + units;
-  await ethers.provider.send("evm_setNextBlockTimestamp", [nextTimestamp]);
-
-  // Mine a new block to finalize the timestamp change
-  await ethers.provider.send("evm_mine", []);
-}
+const {
+  DONT_CARE_ADDRESS,
+  DONT_CARE_BOOL,
+  DONT_CARE_NUM,
+  DONT_CARE_FUNC_SELECTOR,
+  DONT_CARE_OPERATOR,
+  DONT_CARE_ABR_BYTES,
+  DONT_CARE_DATA,
+  AND,
+  OR,
+  NOT_ENROLLED,
+  IN_PROGRESS,
+  COMPLETED,
+  REWARDED
+} = require('./constants');
+  
+const { getCurrentBlockTimestamp, advanceBlockTimestamp } = require('./helpers');
 
 // Testing setMintingCondition function for multi-minting condition
-describe("executing happy cases", () => {
+describe("Testing happy cases", () => {
+  let accounts, quest, dquest, mission, nft1, nft2, ftStandard;
+  let deployedQuest, deployedDquest, deployedMission, deployedNft1, deployedNft2, deployedFtStandard;
+  let missionFormula, outcomes, currentTimeStamp, questStart, questEnd;
+
   beforeEach(async () => {
     accounts = await ethers.getSigners();
     quest = await ethers.getContractFactory("Quest");
@@ -112,7 +77,7 @@ describe("executing happy cases", () => {
     await deployedDquest.createQuest(missionFormula, outcomes, questStart, questEnd);
   });
 
-  it("create a quest with 5-node dummy mission formula", async () => {
+  it("Should create a quest with 5-node dummy mission formula", async () => {
     // building a formula directed binary tree
     const node1 = [1, false, DONT_CARE_ADDRESS, DONT_CARE_ADDRESS, AND, 2, 3, DONT_CARE_ABR_BYTES];
     const node2 = [2, true, DONT_CARE_ADDRESS, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
@@ -141,7 +106,7 @@ describe("executing happy cases", () => {
     await deployedDquest.createQuest(missionFormula, outcomes, questStart, questEnd);
   });
 
-  it("create a quest then reset mission formula for that quest", async () => {
+  it("Should create a quest then reset mission formula for that quest", async () => {
     // building a formula directed binary tree
     const node1 = [2, true, DONT_CARE_ADDRESS, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
     missionFormula = [node1];
@@ -182,7 +147,8 @@ describe("executing happy cases", () => {
     await deployedDquest.setMission;
   });
 
-  it("create a quest with 3-working-node mission formula: M1 OR M2", async () => {
+  // A full flow demo test case
+  it("Should create a quest with a 3-node formula, set up a condition, validate it, and execute the outcome", async () => {
     /*
      * SCRIPTING SUMMARY:
      *
@@ -314,6 +280,7 @@ describe("executing happy cases", () => {
     const pQuest = await quest.attach(questProxy1Address);
 
     // add Quester
+    await expect(await pQuest.questerProgresses(accounts[7].address)).to.equal(NOT_ENROLLED);
     await advanceBlockTimestamp(20);
     quester = accounts[7].address;
     await expect(pQuest.connect(accounts[7]).addQuester()).to.emit(pQuest, "QuesterAdded").withArgs(quester);
@@ -345,7 +312,7 @@ describe("executing happy cases", () => {
     // now since mission formula is (M1 OR M2) so either one of the two being eligible will drive the whole quest validation true.
     // or simply speaking, quester(accounts[7]) is elligible and validation result should be marked as completed
     await pQuest.connect(accounts[7]).validateQuest();
-    await expect(await pQuest.questerProgresses(quester)).to.equal(COMPELETED);
+    await expect(await pQuest.questerProgresses(quester)).to.equal(COMPLETED);
 
     /*
      * REWARD SETTING UP. REWARD OWNER NEEDS TO APPROVE QUEST TO TRANSFER ALL HIS 100 RTD
@@ -359,7 +326,7 @@ describe("executing happy cases", () => {
      *
      */
     await pQuest.connect(accounts[4]).executeQuestOutcome(quester);
-    await expect(await pQuest.questerProgresses(quester)).to.equal(REWADRDED);
+    await expect(await pQuest.questerProgresses(quester)).to.equal(REWARDED);
     // expect erc20 balance
     await expect(await ftstandardI.balanceOf(quester)).to.equal(toBeRewarded);
   });
