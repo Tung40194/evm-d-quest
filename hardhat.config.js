@@ -43,7 +43,6 @@ module.exports = {
       accounts: [process.env.PRIVATE_KEY]
     }
   },
-  defaultNetwork: "local",
   gasReporter: {
     enabled: true,
     currency: "ETH",
