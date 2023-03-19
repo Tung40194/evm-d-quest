@@ -1,30 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-// Error Codes:
-// MF1 - repetitive id
-// MF2 - node(s) missing
-// MF3 - tree loops
-
-import "./DQuestStructLib.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "./Types.sol";
+import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 
 /**
  * @title MissionFormula
  * @dev This library defines data structures and functions related to mission formulas.
  */
 library MissionFormula {
-    // Use EnumerableSet to manage node ids
-    using EnumerableSet for EnumerableSet.UintSet;
+    // Use EnumerableSetUpgradeable to manage node ids
+    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
 
     /**
      * @dev Defines a formula data structure which stores mission nodes in a mapping.
      * @param _values Mapping to store mission nodes.
-     * @param _keys EnumerableSet to manage node ids.
+     * @param _keys EnumerableSetUpgradeable to manage node ids.
      */
     struct Formula {
-        mapping(uint256 => DQuestStructLib.MissionNode) _values;
-        EnumerableSet.UintSet _keys;
+        mapping(uint256 => Types.MissionNode) _values;
+        EnumerableSetUpgradeable.UintSet _keys;
     }
 
     /**
@@ -44,7 +39,7 @@ library MissionFormula {
         uint256 len = formula._keys.length();
         for (uint256 index = 0; index < len; index++) {
             uint256 key = formula._keys.at(index);
-            DQuestStructLib.MissionNode memory node = formula._values[key];
+            Types.MissionNode memory node = formula._values[key];
             // if it is node to be checked, continue
             if (node.id == nodeId) continue;
             // if node is a child node, node is not a root node
@@ -59,10 +54,7 @@ library MissionFormula {
      * @param nodes Array of mission nodes to add to the formula.
      * @return Boolean indicating success.
      */
-    function _set(
-        efficientlyResetableFormula storage f,
-        DQuestStructLib.MissionNode[] memory nodes
-    ) internal returns (bool) {
+    function _set(efficientlyResetableFormula storage f, Types.MissionNode[] memory nodes) internal returns (bool) {
         _reset(f);
         if (nodes.length != 0) {
             for (uint256 idx = 0; idx < nodes.length; idx++) {
@@ -93,7 +85,7 @@ library MissionFormula {
     function _getNode(
         efficientlyResetableFormula storage f,
         uint256 nodeId
-    ) internal view returns (DQuestStructLib.MissionNode memory) {
+    ) internal view returns (Types.MissionNode memory) {
         require(f.erf[f.rstPtr]._keys.contains(nodeId), "Null node");
         return f.erf[f.rstPtr]._values[nodeId];
     }

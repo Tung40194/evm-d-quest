@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-import "../lib/DQuestStructLib.sol";
+import "../lib/Types.sol";
 
 /// @title An interface for a Quest contract
 /// @notice Quest contract is use to manage Questers, Missions and Outcomes
@@ -22,11 +22,11 @@ interface IQuest {
 
     /// @notice This event is triggered when the set of mission nodes is updated.
     /// @param missionFormulas An array of MissionNode objects.
-    event MissionNodeFormulasSet(DQuestStructLib.MissionNode[] missionFormulas);
+    event MissionNodeFormulasSet(Types.MissionNode[] missionFormulas);
 
     /// @notice This event is triggered when the set of outcomes is updated.
     /// @param outcomes An array of Outcome objects.
-    event OutcomeSet(DQuestStructLib.Outcome[] outcomes);
+    event OutcomeSet(Types.Outcome[] outcomes);
 
     /// @notice This event is triggered when an outcome is executed on a quester.
     /// @param quester The address of the quester who outcome is being executed on.
@@ -75,11 +75,11 @@ interface IQuest {
      * FYI:
      *  - The numbers in the parentheses are the indexes of the nodes
      */
-    function setMissionNodeFormulas(DQuestStructLib.MissionNode[] calldata nodes) external;
+    function setMissionNodeFormulas(Types.MissionNode[] calldata nodes) external;
 
     /// @notice Set the outcomes for this quest.
     /// @param outcomes An array of Outcome structs.
-    function setOutcomes(DQuestStructLib.Outcome[] calldata outcomes) external;
+    function setOutcomes(Types.Outcome[] calldata outcomes) external;
 
     /// QUEST FUNCTIONS
 
