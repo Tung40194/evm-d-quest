@@ -8,11 +8,11 @@
 
 async function main() {
   //TODO: change the quest(proxy) address (beacon proxy) below. Take it on-chain via Dquest::getQuest(index)
-  const proxyAddress = "0xC3BC0D08f5299bF54411aBB79054Ad8F40e09fbE";
-  const newQuestImplementation = await ethers.getContractFactory("Quest");
+  const proxyAddress = "0xFc542c46141dBDf0b8c89065b83F1f02d527815B";
+  const questImplementation = await ethers.getContractFactory("Quest");
 
   // importing compatible-checked/ok new implementation
-  await upgrades.forceImport(proxyAddress, newQuestImplementation, { kind: "beacon" });
+  await upgrades.forceImport(proxyAddress, questImplementation, { kind: "beacon" });
   console.log("| - Imported new quest implementation to hardhat upgrades management system");
 }
 
