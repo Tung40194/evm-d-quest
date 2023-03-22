@@ -39,7 +39,7 @@ module.exports = {
     },
     polygon: {
       url: "https://polygon-rpc.com",
-      gasPrice: 170000000000,
+      gasPrice: 150000000000,
       accounts: [process.env.PRIVATE_KEY]
     }
   },
