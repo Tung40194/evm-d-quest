@@ -111,7 +111,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         address quester,
         uint256 missionNodeId,
         bool isMissionDone
-    ) external {
+    ) external whenActive {
         
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(
@@ -156,7 +156,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         }
     }
 
-    function validateQuest() external override onlyQuester whenNotPaused returns (bool) {
+    function validateQuest() external override onlyQuester whenActive whenNotPaused returns (bool) {
         bool result = evaluateMissionFormulaTree(formulaRootNodeId);
         if (result == true) {
             questerProgresses[msg.sender] = QuesterProgress.Completed;
@@ -164,7 +164,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         return result;
     }
 
-    function validateMission(uint256 missionNodeId) public override onlyQuester whenNotPaused returns (bool) {
+    function validateMission(uint256 missionNodeId) public override onlyQuester whenActive whenNotPaused returns (bool) {
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(node.isMission == true, "Not a mission");
         bool cache = questerMissionsDone[msg.sender][missionNodeId];
@@ -177,11 +177,11 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         return cache;
     }
 
-    function pauseQuest() external override onlyOwner {
+    function pauseQuest() external override onlyOwner whenActive {
         _pause();
     }
 
-    function resumeQuest() external override onlyOwner {
+    function resumeQuest() external override onlyOwner whenActive {
         _unpause();
     }
 
@@ -504,13 +504,13 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         return rootNode;
     }
 
-    function erc721SetTokenUsed(uint256 missionNodeId, address addr, uint256 tokenId) external override {
+    function erc721SetTokenUsed(uint256 missionNodeId, address addr, uint256 tokenId) external whenActive override {
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(msg.sender == node.missionHandlerAddress, "States update not allowed");
         tokenUsed[addr][tokenId] = true;
     }
 
-    function erc721GetTokenUsed(address addr, uint256 tokenId) external view override returns(bool) {
+    function erc721GetTokenUsed(address addr, uint256 tokenId) external whenActive view override returns(bool) {
         return tokenUsed[addr][tokenId];
     }
 }
