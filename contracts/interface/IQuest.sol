@@ -7,14 +7,12 @@ import "../lib/Types.sol";
 interface IQuest {
     /// @dev Defines the possible states of a quester's status to current quest.
     /// States:
-    /// - NotEnrolled = The quester hasn't joined the quest.
-    /// - InProgress = The quester has joined the quest and doing mission.
-    /// - Completed = The quester has finished all missions in the quest.
+    /// - Ineligible = The quester is not eligible to get rewarded.
+    /// - Eligible = The quester is eligible to get rewarded.
     /// - Rewarded = The quester has successfully completed the quest and received a reward.
     enum QuesterProgress {
-        NotEnrolled,
-        InProgress,
-        Completed,
+        Ineligible,
+        Eligible,
         Rewarded
     }
 
@@ -133,7 +131,7 @@ interface IQuest {
      * Only callable when the contract is active.
      * Emits a `QuesterAdded` event.
      */
-    function addQuester() external;
+    //function addQuester() external;
 
     /**
      * @dev Returns the total number of questers.

@@ -11,11 +11,13 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 
 contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using MissionFormula for MissionFormula.efficientlyResetableFormula;
     using OutcomeManager for OutcomeManager.efficientlyResetableOutcome;
     using mNodeId2Iterator for mNodeId2Iterator.ResetableId2iterator;
+    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.AddressSet;
 
     // binary tree cycles detection helpers
     mNodeId2Iterator.ResetableId2iterator private id2itr1;
@@ -25,12 +27,14 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     // contract storage
     MissionFormula.efficientlyResetableFormula public missionNodeFormulas;
     OutcomeManager.efficientlyResetableOutcome public outcomes;
-    address[] private allQuesters;
+    address[] private allQuesters; // deprecated
     mapping(address => QuesterProgress) public questerProgresses;
     mapping(address => mapping(uint256 => bool)) private questerMissionsDone;
     uint256 public startTimestamp;
     uint256 public endTimestamp;
     bool public isRewardAvailable;
+
+    EnumerableSetUpgradeable.AddressSet questers;
 
     bytes4 constant SELECTOR_TRANSFERFROM = bytes4(keccak256(bytes("transferFrom(address,address,uint256)")));
     bytes4 constant SELECTOR_SAFETRANSFERFROM = bytes4(keccak256(bytes("safeTransferFrom(address,address,uint256)")));
@@ -40,17 +44,6 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     // utility mapping for NFT handler only
     mapping(address => mapping(uint256 => bool)) tokenUsed;
 
-    // TODO: check allQuesters's role
-    modifier onlyQuester() {
-        require(questerProgresses[msg.sender] != QuesterProgress.NotEnrolled, "For questers only");
-        _;
-    }
-
-    modifier questerNotEnrolled() {
-        require(questerProgresses[msg.sender] == QuesterProgress.NotEnrolled, "Quester already joined");
-        _;
-    }
-
     // when quest is inactive
     modifier whenInactive() {
         require(block.timestamp < startTimestamp, "Quest has started");
@@ -59,15 +52,24 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
 
     // when quest is active
     modifier whenActive() {
-        //require(status == QuestStatus.Active, "Quest is not Active");
         require(startTimestamp <= block.timestamp && block.timestamp <= endTimestamp, "Quest is not Active");
         _;
     }
 
     // when quest is closed/expired
     modifier whenClosed() {
-        //require(status != QuestStatus.Closed, "Quest is expired");
         require(block.timestamp > endTimestamp, "Quest is expired");
+        _;
+    }
+
+    // when caller is ineligible
+    modifier whenIneligible() {
+        require(questerProgresses[msg.sender] == QuesterProgress.Ineligible, "Not ineligible");
+        _;
+    }
+    // when caller is eligible
+    modifier whenEligible(address quester) {
+        require(questerProgresses[quester] == QuesterProgress.Eligible, "Not Eligible");
         _;
     }
 
@@ -111,14 +113,10 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         address quester,
         uint256 missionNodeId,
         bool isMissionDone
-    ) external whenActive {
+    ) external whenActive whenIneligible {
         
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
-        require(
-            msg.sender == node.missionHandlerAddress || msg.sender == node.oracleAddress,
-            "States update not allowed"
-        );
-        require(questerProgresses[quester] != QuesterProgress.NotEnrolled, "Not a quester");
+        require(msg.sender == node.missionHandlerAddress, "States update not allowed");
         questerMissionsDone[quester][missionNodeId] = isMissionDone;
     }
 
@@ -156,15 +154,17 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         }
     }
 
-    function validateQuest() external override onlyQuester whenActive whenNotPaused returns (bool) {
+    function validateQuest() external override whenActive whenNotPaused whenIneligible returns (bool) {
+        questers.add(msg.sender);
         bool result = evaluateMissionFormulaTree(formulaRootNodeId);
         if (result == true) {
-            questerProgresses[msg.sender] = QuesterProgress.Completed;
+            questerProgresses[msg.sender] = QuesterProgress.Eligible;
         }
         return result;
     }
 
-    function validateMission(uint256 missionNodeId) public override onlyQuester whenActive whenNotPaused returns (bool) {
+    function validateMission(uint256 missionNodeId) public override whenActive whenNotPaused whenIneligible returns (bool) {
+        questers.add(msg.sender);
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(node.isMission == true, "Not a mission");
         bool cache = questerMissionsDone[msg.sender][missionNodeId];
@@ -183,12 +183,6 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
 
     function resumeQuest() external override onlyOwner whenActive {
         _unpause();
-    }
-
-    function addQuester() external override whenActive questerNotEnrolled {
-        allQuesters.push(msg.sender);
-        questerProgresses[msg.sender] = QuesterProgress.InProgress;
-        emit QuesterAdded(msg.sender);
     }
 
     function getTotalQuesters() external view override returns (uint256 totalQuesters) {
@@ -248,8 +242,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     * Only the quest can call this function when the quest is active.
     * @param _quester The address of the quester whose outcome to execute.
     */
-    function executeQuestOutcome(address _quester) external override whenActive nonReentrant {
-        require(questerProgresses[_quester] == QuesterProgress.Completed, "Quest not completed");
+    function executeQuestOutcome(address _quester) external override whenActive whenEligible(_quester) nonReentrant {
         require(isRewardAvailable, "The Quest's run out of Reward");
         for (uint256 i = 0; i < outcomes._length(); i++) {
             Types.Outcome memory outcome = outcomes._getOutcome(i);

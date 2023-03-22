@@ -13,10 +13,9 @@ module.exports = {
   OR: 1,
 
   // define quester's status
-  NOT_ENROLLED: 0,
-  IN_PROGRESS: 1,
-  COMPLETED: 2,
-  REWARDED: 3,
+  INELIGIBLE: 0,
+  ELIGIBLE: 1,
+  REWARDED: 2,
 
   // define struct types for mission formula construction
   missionNodeType: ["uint256", "bool", "address", "address", "uint8", "uint256", "uint256", "bytes[]"],

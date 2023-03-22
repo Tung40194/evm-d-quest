@@ -9,9 +9,8 @@ const {
   DONT_CARE_DATA,
   AND,
   OR,
-  NOT_ENROLLED,
-  IN_PROGRESS,
-  COMPLETED,
+  INELIGIBLE,
+  ELIGIBLE,
   REWARDED
 } = require("./constants");
 
@@ -279,12 +278,9 @@ describe("Testing happy cases", () => {
     const questProxy1Address = await deployedDquest.getQuest(0);
     const pQuest = await quest.attach(questProxy1Address);
 
-    // add Quester
-    await expect(await pQuest.questerProgresses(accounts[7].address)).to.equal(NOT_ENROLLED);
-    await advanceBlockTimestamp(20);
+    // Let pick a quester account
     quester = accounts[7].address;
-    await expect(pQuest.connect(accounts[7]).addQuester()).to.emit(pQuest, "QuesterAdded").withArgs(quester);
-    await expect(await pQuest.questerProgresses(accounts[7].address)).to.equal(IN_PROGRESS);
+    await expect(await pQuest.questerProgresses(quester)).to.equal(INELIGIBLE);
 
     /*
      * DISTRIBUTING NFT1 AND NFT2 TO QUESTER
@@ -304,6 +300,9 @@ describe("Testing happy cases", () => {
     await nft2I.connect(accounts[0]).safeMint(quester, "give quester id #4");
     await nft2I.connect(accounts[0]).safeMint(quester, "give quester id #5");
 
+    // Advancing block timestamps to enter quest's active period
+    await advanceBlockTimestamp(20);
+
     /*
      * VALIDADE (M1 OR M2) (ONLY QUESTER CAN DO THIS)
      *
@@ -312,7 +311,7 @@ describe("Testing happy cases", () => {
     // now since mission formula is (M1 OR M2) so either one of the two being eligible will drive the whole quest validation true.
     // or simply speaking, quester(accounts[7]) is elligible and validation result should be marked as completed
     await pQuest.connect(accounts[7]).validateQuest();
-    await expect(await pQuest.questerProgresses(quester)).to.equal(COMPLETED);
+    await expect(await pQuest.questerProgresses(quester)).to.equal(ELIGIBLE);
 
     /*
      * REWARD SETTING UP. REWARD OWNER NEEDS TO APPROVE QUEST TO TRANSFER ALL HIS 100 RTD
