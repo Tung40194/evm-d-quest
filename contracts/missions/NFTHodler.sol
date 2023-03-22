@@ -7,9 +7,8 @@ import "../interface/IMission.sol";
 import "../interface/IQuest.sol";
 import "../interface/IDQuest.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract NFThodler is IMission, Ownable {
+contract NFThodler is IMission {
     using BytesConversion for bytes;
 
     // address of dquest contract

@@ -60,17 +60,17 @@ interface IQuest {
      *  - In case of leafNode (also Mission node(not "operator" node)), its LeftNode/RightNode must be both 0.
      *  - The input array `nodes` MUST not contain any cycles.
      *
-     *                             OR(0)
+     *                             OR(1)
      *                           /        `
      *                          /            `
      *                         /                `
-     *                     AND(1)                  `AND(2)
+     *                     AND(2)                  `AND(3)
      *                    /      `                 /      `
      *                   /         `              /         `
-     *               AND(3)          `M3(4)     M4(5)         `M1(6)
+     *               AND(4)          `M3(5)     M4(6)         `M1(7)
      *              /    `
      *             /       `
-     *           M1(7)       `M2(8)
+     *           M1(8)       `M2(9)
      *
      * FYI:
      *  - The numbers in the parentheses are the indexes of the nodes
