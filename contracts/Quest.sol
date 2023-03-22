@@ -23,8 +23,8 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     uint256 private formulaRootNodeId;
 
     // contract storage
-    MissionFormula.efficientlyResetableFormula private missionNodeFormulas;
-    OutcomeManager.efficientlyResetableOutcome private outcomes;
+    MissionFormula.efficientlyResetableFormula public missionNodeFormulas;
+    OutcomeManager.efficientlyResetableOutcome public outcomes;
     address[] private allQuesters;
     mapping(address => QuesterProgress) public questerProgresses;
     mapping(address => mapping(uint256 => bool)) private questerMissionsDone;
