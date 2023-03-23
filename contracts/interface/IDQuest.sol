@@ -63,9 +63,9 @@ interface IDQuest {
     function getAllQuests() external view returns (address[] memory);
 
     /**
-     * @dev Returns an array of Quest contract addresses created by the specified Quester.
-     * @param quester The address of the Quester to get Quests from.
-     * @return An array of Quest contract addresses created by the specified Quester.
+     * @dev Returns an array of Quest contract addresses created by the specified Admin.
+     * @param admin The address of the admin to get Quests from.
+     * @return An array of Quest contract addresses created by the specified Admin.
      */
-    function getQuests(address quester) external view returns (address[] memory);
+    function getQuests(address admin) external view returns (address[] memory);
 }
