@@ -7,7 +7,7 @@ import "../lib/Types.sol";
 /// @notice MUST define data schema to decode object node.data in validateMission() method
 interface IMission {
     //TODO just emit enough
-    event MissionValidated(address quester, Types.MissionNode node);
+    event MissionValidated(address quester, Types.MissionNode node, bool result);
 
     /**
      * @dev Validates the mission submitted.
