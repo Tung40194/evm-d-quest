@@ -36,11 +36,9 @@ contract NFTHodler2 is IMission {
 
         // start decoding node.data with schema: (address token_address)
         address tokenAddr = node.data[0].toAddress();
-        
 
         if (tokenAddr.isContract()) {
             IERC721 tokenContract = IERC721(tokenAddr);
-            
         }
 
         IERC721 tokenContract = IERC721(tokenAddr);
