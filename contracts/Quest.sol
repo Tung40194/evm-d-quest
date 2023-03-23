@@ -23,11 +23,11 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     uint256 private formulaRootNodeId;
 
     // contract storage
-    MissionFormula.efficientlyResetableFormula private missionNodeFormulas;
-    OutcomeManager.efficientlyResetableOutcome private outcomes;
-    address[] private allQuesters;
+    MissionFormula.efficientlyResetableFormula public missionNodeFormulas;
+    OutcomeManager.efficientlyResetableOutcome public outcomes;
+    address[] public allQuesters;
     mapping(address => QuesterProgress) public questerProgresses;
-    mapping(address => mapping(uint256 => bool)) private questerMissionsDone;
+    mapping(address => mapping(uint256 => bool)) public questerMissionsDone;
     uint256 public startTimestamp;
     uint256 public endTimestamp;
     bool public isRewardAvailable;
@@ -111,7 +111,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         address quester,
         uint256 missionNodeId,
         bool isMissionDone
-    ) external {
+    ) external whenActive {
         
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(
@@ -156,7 +156,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         }
     }
 
-    function validateQuest() external override whenNotPaused returns (bool) {
+    function validateQuest() external override whenActive whenNotPaused returns (bool) {
         if (questerProgresses[msg.sender] == QuesterProgress.NotEnrolled) {
             allQuesters.push(msg.sender);
             questerProgresses[msg.sender] = QuesterProgress.InProgress;
@@ -170,7 +170,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         return result;
     }
 
-    function validateMission(uint256 missionNodeId) public override whenNotPaused returns (bool) {
+    function validateMission(uint256 missionNodeId) public override whenActive whenNotPaused returns (bool) {
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(node.isMission == true, "Not a mission");
         bool cache = questerMissionsDone[msg.sender][missionNodeId];
@@ -183,11 +183,11 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         return cache;
     }
 
-    function pauseQuest() external override onlyOwner {
+    function pauseQuest() external override onlyOwner whenActive {
         _pause();
     }
 
-    function resumeQuest() external override onlyOwner {
+    function resumeQuest() external override onlyOwner whenActive {
         _unpause();
     }
 
@@ -415,16 +415,16 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         require(nodes.length > 0, "formula input empty");
         // Check for repeated IDs
         for (uint256 i = 0; i < nodes.length; i++) {
-            // validate for mission node (operator nodes don't need this)
+            require(nodes[i].id != 0, "A node's id must not be 0");
             if(nodes[i].isMission == true) {
-                if(nodes[i].missionHandlerAddress == address(0x0))
-                    revert("handler address 0x0");
-                if(nodes[i].oracleAddress == address(0x0))
-                    revert("oracle address 0x0");
-                if((nodes[i].leftNode | nodes[i].rightNode) != 0)
-                    revert("leaf node's left/right node != 0");
-                if(nodes[i].data.length == 0)
-                    revert("empty data");
+                // validate for mission node
+                require(nodes[i].missionHandlerAddress != address(0x0), "handler address mustn't be 0x0");
+                require(nodes[i].oracleAddress != address(0x0), "oracle address mustn't be 0x0");
+                require((nodes[i].leftNode | nodes[i].rightNode) == 0, "M node's left/right id must be 0");
+                require(nodes[i].data.length != 0, "data must not be empty");
+            } else {
+                // when node is an operator
+                require(((nodes[i].leftNode != 0) && (nodes[i].rightNode != 0)), "OP node's l&r node must != 0");
             }
             for (uint256 j = i + 1; j < nodes.length; j++) {
                 if (nodes[i].id == nodes[j].id) {
@@ -510,13 +510,13 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         return rootNode;
     }
 
-    function erc721SetTokenUsed(uint256 missionNodeId, address addr, uint256 tokenId) external override {
+    function erc721SetTokenUsed(uint256 missionNodeId, address addr, uint256 tokenId) external whenActive override {
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(msg.sender == node.missionHandlerAddress, "States update not allowed");
         tokenUsed[addr][tokenId] = true;
     }
 
-    function erc721GetTokenUsed(address addr, uint256 tokenId) external view override returns(bool) {
+    function erc721GetTokenUsed(address addr, uint256 tokenId) external whenActive view override returns(bool) {
         return tokenUsed[addr][tokenId];
     }
 }

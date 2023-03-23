@@ -10,8 +10,11 @@
 3. To take the most out of hardhat, we can import each implementation of Quest right into this project's hardhat upgrades management system.
 4. TO DO THAT:
     4.1. feed 
+
         - 1) proxy contract address(that we will upgrade) and 
+
         - 2) the implementation for the proxy
+        
         to `force_import_proxy.js`
 
         In future upgrades, take the new implementation at 2) and and feed it to the script

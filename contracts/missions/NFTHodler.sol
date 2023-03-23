@@ -7,9 +7,8 @@ import "../interface/IMission.sol";
 import "../interface/IQuest.sol";
 import "../interface/IDQuest.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract NFThodler is IMission, Ownable {
+contract NFThodler is IMission {
     using BytesConversion for bytes;
 
     // address of dquest contract
@@ -57,11 +56,11 @@ contract NFThodler is IMission, Ownable {
             if (!tokenInUse && owned) {
                 quest.setMissionStatus(quester, node.id, true);
                 quest.erc721SetTokenUsed(node.id, tokenAddr, index);
-                emit MissionValidated(quester, node);
+                emit MissionValidated(quester, node, true);
                 return true;
             }
         }
-        emit MissionValidated(quester, node);
+        emit MissionValidated(quester, node, false);
         return false;
     }
 }
