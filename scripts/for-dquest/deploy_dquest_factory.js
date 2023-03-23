@@ -8,6 +8,19 @@ async function main() {
   await deployedQuest.deployed();
   console.log("| - Quest implementation address at:", deployedQuest.address);
 
+  const dQuest = await ethers.getContractFactory("DQuest");
+  const dQuestProxy = await upgrades.deployProxy(dQuest, [deployedQuest.address], { initializer: "initialize" });
+  await dQuestProxy.deployed();
+
+  console.log("| - Dquest proxy deployed at:", dQuestProxy.address);
+  console.log(
+    "| - Dquest implementation address:",
+    await upgrades.erc1967.getImplementationAddress(dQuestProxy.address)
+  );
+  console.log(
+    "| - Dquest admin address:",
+    await upgrades.erc1967.getAdminAddress(dQuestProxy.address)
+  );
 }
 
 main();
