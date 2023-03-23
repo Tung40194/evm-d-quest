@@ -6,16 +6,22 @@ import "../lib/BytesConversion.sol";
 import "../interface/IMission.sol";
 import "../interface/IQuest.sol";
 import "../interface/IDQuest.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 // This is an improvement from ./NFTHodler targeting all ERC721 Enumerable extender
 // To verify if a user has any NFT token in a given range
 // mission data schema: (address token_address, uint256 start_id, uint256 stop_id)
 contract NFTHodler2 is IMission {
     using BytesConversion for bytes;
+    using Address for address;
 
     // address of dquest contract
     address public dquestContract;
+
+    // define ERC721 Enumerable interface
+    bytes4 private constant _INTERFACE_ID_ERC721_ENUMERABLE = 0x780e9d63;
 
     constructor(address dQuest) {
         require(dQuest != address(0x0), "dquest can't be 0x0");
@@ -34,35 +40,36 @@ contract NFTHodler2 is IMission {
         require(dquest.isQuest(msg.sender), "Caller is not a quest");
         IQuest quest = IQuest(msg.sender);
 
-        // start decoding node.data with schema: (address token_address)
+        // start decoding node.data with schema: (address token_address, uint256 start_id, uint256 stop_id)
         address tokenAddr = node.data[0].toAddress();
+        uint256 startId = node.data[1].toUint256();
+        uint256 stopId = node.data[2].toUint256();
 
-        if (tokenAddr.isContract()) {
-            IERC721 tokenContract = IERC721(tokenAddr);
-        }
+        require(startId <= stopId, "Invalid encoded token range");
 
-        IERC721 tokenContract = IERC721(tokenAddr);
-        //TODO Mountain merkle range may help saving GAS here
-        for (uint256 index = startId; index <= stopId; index++) {
-            bool tokenInUse = quest.erc721GetTokenUsed(tokenAddr, index);
-            bool owned = false;
+        require(address(tokenAddr).isContract(), "Not a contract");
+        try IERC165(tokenAddr).supportsInterface(_INTERFACE_ID_ERC721_ENUMERABLE) returns (bool supported) {
+            // Contracts support ERC-165
+            require(supported, "ERC721Enumerable not supported");
+            ERC721Enumerable tokenContract = ERC721Enumerable(tokenAddr);
 
-            try tokenContract.ownerOf(index) returns (address owner) {
-                // if found, check if owner is the quester
-                owned = (quester == owner);
-            } catch {
-                // if index not valid, continue
-                continue;
+            uint256 balance = tokenContract.balanceOf(quester);
+            for(uint256 index = 0; index < balance; index ++) {
+                uint256 tokenId = tokenContract.tokenOfOwnerByIndex(quester, index);
+                bool tokenInUse = quest.erc721GetTokenUsed(tokenAddr, index);
+                if (startId <= tokenId && tokenId <= stopId && !tokenInUse) {
+                    quest.setMissionStatus(quester, node.id, true);
+                    quest.erc721SetTokenUsed(node.id, tokenAddr, index);
+                    emit MissionValidated(quester, node, true);
+                    return true;
+                }
             }
+            emit MissionValidated(quester, node, false);
+            return false;
 
-            if (!tokenInUse && owned) {
-                quest.setMissionStatus(quester, node.id, true);
-                quest.erc721SetTokenUsed(node.id, tokenAddr, index);
-                emit MissionValidated(quester, node, true);
-                return true;
-            }
+        } catch (bytes memory /*lowLevelData*/) {
+            // Contracts doesn't support ERC-165
+            revert("ERC-165 not supported");
         }
-        emit MissionValidated(quester, node, false);
-        return false;
     }
 }
