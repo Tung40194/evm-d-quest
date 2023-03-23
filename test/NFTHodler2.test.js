@@ -49,7 +49,6 @@ describe("Testing new mission handler for erc721 enumerable contracts", () => {
   });
 
   it("Should create a quest with a 1-node formula, set up a condition, validate it, and execute the outcome", async () => {
-
     // encoding data for M1
     addr = web3.eth.abi.encodeParameter("address", deployedNft3.address);
     start = web3.eth.abi.encodeParameter("uint256", "7");
@@ -125,12 +124,10 @@ describe("Testing new mission handler for erc721 enumerable contracts", () => {
     await expect(pQuest.connect(accounts[7]).addQuester()).to.emit(pQuest, "QuesterAdded").withArgs(quester);
     await expect(await pQuest.questerProgresses(accounts[7].address)).to.equal(IN_PROGRESS);
 
-
-
     /*
-      * FAIL VALIDADE (M1) (ONLY QUESTER CAN DO THIS)
-      *
-      */
+     * FAIL VALIDADE (M1) (ONLY QUESTER CAN DO THIS)
+     *
+     */
 
     // give quester id #6 from NFT3. This will not be eligible because required range is [7,10]
     await nft3I.connect(accounts[0]).safeMint(quester, 6);

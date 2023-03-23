@@ -54,7 +54,7 @@ contract NFTHodler2 is IMission {
             ERC721Enumerable tokenContract = ERC721Enumerable(tokenAddr);
 
             uint256 balance = tokenContract.balanceOf(quester);
-            for(uint256 index = 0; index < balance; index ++) {
+            for (uint256 index = 0; index < balance; index++) {
                 uint256 tokenId = tokenContract.tokenOfOwnerByIndex(quester, index);
                 bool tokenInUse = quest.erc721GetTokenUsed(tokenAddr, index);
                 if (startId <= tokenId && tokenId <= stopId && !tokenInUse) {
@@ -66,7 +66,6 @@ contract NFTHodler2 is IMission {
             }
             emit MissionValidated(quester, node, false);
             return false;
-
         } catch (bytes memory /*lowLevelData*/) {
             // Contracts doesn't support ERC-165
             revert("ERC-165 not supported");

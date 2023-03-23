@@ -3,9 +3,9 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+
 // an ERC721 Enumerable NFT
 contract NFT3 is ERC721, ERC721Enumerable {
-
     constructor() ERC721("NonFunTok3", "NFT") {}
 
     function _beforeTokenTransfer(
@@ -17,7 +17,9 @@ contract NFT3 is ERC721, ERC721Enumerable {
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC721Enumerable) returns (bool) {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(ERC721, ERC721Enumerable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
