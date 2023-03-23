@@ -13,7 +13,7 @@ cache
 artifacts
 
 #openzeppelin files
-#.openzeppelin/unknown-*.json
+.openzeppelin/unknown-*.json
 #.openzeppelin/.session
 #/.openzeppelin
 
