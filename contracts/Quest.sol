@@ -114,10 +114,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     ) external whenActive {
         
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
-        require(
-            msg.sender == node.missionHandlerAddress || msg.sender == node.oracleAddress,
-            "States update not allowed"
-        );
+        require(msg.sender == node.missionHandlerAddress,"States update not allowed");
         require(questerProgresses[quester] != QuesterProgress.NotEnrolled, "Not a quester");
         questerMissionsDone[quester][missionNodeId] = isMissionDone;
     }
