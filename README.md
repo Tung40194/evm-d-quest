@@ -76,6 +76,8 @@ Check and adapt & edit the proxy address in `scripts/for-dquest/upgrade_dquest_f
 
 # IV. Note:
 
+- All network after option --network in this file is an example. Change accordingly to your network choice.
+
 - To verify contract(mostly implementation contracts):
     `npx hardhat verify <contract address> --network <network> <constructor param 1> <constructor param 2>`
 
