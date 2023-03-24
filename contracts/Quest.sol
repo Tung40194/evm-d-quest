@@ -23,11 +23,11 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     uint256 private formulaRootNodeId;
 
     // contract storage
-    MissionFormula.efficientlyResetableFormula public missionNodeFormulas;
-    OutcomeManager.efficientlyResetableOutcome public outcomes;
+    MissionFormula.efficientlyResetableFormula private missionNodeFormulas;
+    OutcomeManager.efficientlyResetableOutcome private outcomes;
     address[] public allQuesters;
-    mapping(address => QuesterProgress) public questerProgresses;
-    mapping(address => mapping(uint256 => bool)) public questerMissionsDone;
+    mapping(address => QuesterProgress) private questerProgresses;
+    mapping(address => mapping(uint256 => bool)) private questerMissionsDone;
     uint256 public startTimestamp;
     uint256 public endTimestamp;
     bool public isRewardAvailable;
@@ -38,7 +38,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     bytes4 constant SELECTOR_SBTMINT = bytes4(keccak256(bytes("mint(address[],uint256)")));
 
     // utility mapping for NFT handler only
-    mapping(address => mapping(uint256 => bool)) tokenUsed;
+    mapping(address => mapping(uint256 => bool)) private tokenUsed;
 
     // TODO: check allQuesters's role
     modifier onlyQuester() {
@@ -114,10 +114,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     ) external whenActive {
         
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
-        require(
-            msg.sender == node.missionHandlerAddress || msg.sender == node.oracleAddress,
-            "States update not allowed"
-        );
+        require(msg.sender == node.missionHandlerAddress,"States update not allowed");
         require(questerProgresses[quester] != QuesterProgress.NotEnrolled, "Not a quester");
         questerMissionsDone[quester][missionNodeId] = isMissionDone;
     }
@@ -129,7 +126,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         whenInactive
     {
         // TODO: improve validation of input mission nodes
-        validateFormulaInput(nodes);
+        _validateFormulaInput(nodes);
         require(missionNodeFormulas._set(nodes), "Fail to set mission formula");
         emit MissionNodeFormulasSet(nodes);
     }
@@ -138,7 +135,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
      * @dev evaluate mission formula
      * @param nodeId Always the root node of the formula
      */
-    function evaluateMissionFormulaTree(
+    function _evaluateMissionFormulaTree(
         uint256 nodeId
     ) private returns (bool) {
         //TODO validate the binary tree's depth
@@ -146,8 +143,8 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         if (node.isMission) {
             return validateMission(node.id);
         } else {
-            bool leftResult = evaluateMissionFormulaTree(node.leftNode);
-            bool rightResult = evaluateMissionFormulaTree(node.rightNode);
+            bool leftResult = _evaluateMissionFormulaTree(node.leftNode);
+            bool rightResult = _evaluateMissionFormulaTree(node.rightNode);
             if (node.operatorType == Types.OperatorType.AND) {
                 return leftResult && rightResult;
             } else {
@@ -157,13 +154,8 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     function validateQuest() external override whenActive whenNotPaused returns (bool) {
-        if (questerProgresses[msg.sender] == QuesterProgress.NotEnrolled) {
-            allQuesters.push(msg.sender);
-            questerProgresses[msg.sender] = QuesterProgress.InProgress;
-            emit QuesterAdded(msg.sender);
-        }
-
-        bool result = evaluateMissionFormulaTree(formulaRootNodeId);
+        _enroll(msg.sender);
+        bool result = _evaluateMissionFormulaTree(formulaRootNodeId);
         if (result == true) {
             questerProgresses[msg.sender] = QuesterProgress.Completed;
         }
@@ -171,6 +163,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     function validateMission(uint256 missionNodeId) public override whenActive whenNotPaused returns (bool) {
+        _enroll(msg.sender);
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(node.isMission == true, "Not a mission");
         bool cache = questerMissionsDone[msg.sender][missionNodeId];
@@ -191,10 +184,10 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         _unpause();
     }
 
-    function addQuester() external override whenActive questerNotEnrolled {
+    function join() external override whenActive questerNotEnrolled {
         allQuesters.push(msg.sender);
         questerProgresses[msg.sender] = QuesterProgress.InProgress;
-        emit QuesterAdded(msg.sender);
+        emit QuesterJoined(msg.sender);
     }
 
     function getTotalQuesters() external view override returns (uint256 totalQuesters) {
@@ -411,7 +404,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     // validate mission formula input
-    function validateFormulaInput(Types.MissionNode[] memory nodes) private {
+    function _validateFormulaInput(Types.MissionNode[] memory nodes) private {
         require(nodes.length > 0, "formula input empty");
         // Check for repeated IDs
         for (uint256 i = 0; i < nodes.length; i++) {
@@ -434,24 +427,24 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         }
 
         // Validate and find root node
-        uint256 rootId = findRoot(nodes);
+        uint256 rootId = _findRoot(nodes);
 
         //TODO Check for loops/cycles
-        if(hasCycle(nodes, rootId))
+        if(_hasCycle(nodes, rootId))
             revert("mission formula has cycles");
 
         formulaRootNodeId = rootId;
     }
 
     // detect Cycle in a directed binary tree
-    function hasCycle(Types.MissionNode[] memory nodes, uint256 rootNodeId) private returns(bool) {
+    function _hasCycle(Types.MissionNode[] memory nodes, uint256 rootNodeId) private returns(bool) {
         bool[] memory visited = new bool[](nodes.length);
         id2itr1._setIterators(nodes);
-        return hasCycleUtil(nodes, visited, rootNodeId);
+        return _hasCycleUtil(nodes, visited, rootNodeId);
     }
 
     // cycle detection helper
-    function hasCycleUtil(
+    function _hasCycleUtil(
         Types.MissionNode[] memory nodes,
         bool[] memory visited,
         uint256 id
@@ -462,7 +455,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             if (visited[id2itr1._getIterator(node.leftNode)]) {
                 return true;
             }
-            if (hasCycleUtil(nodes, visited, node.leftNode)) {
+            if (_hasCycleUtil(nodes, visited, node.leftNode)) {
                 return true;
             }
         }
@@ -470,7 +463,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             if (visited[id2itr1._getIterator(node.rightNode)]) {
                 return true;
             }
-            if (hasCycleUtil(nodes, visited, node.rightNode)) {
+            if (_hasCycleUtil(nodes, visited, node.rightNode)) {
                 return true;
             }
         }
@@ -478,7 +471,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     // support find root node of a binary tree
-    function findRoot(Types.MissionNode[] memory tree) private returns (uint256) {
+    function _findRoot(Types.MissionNode[] memory tree) private returns (uint256) {
         uint256 n = tree.length;
         id2itr2._setIterators(tree);
         bool[] memory isChild = new bool[](n);
@@ -518,5 +511,30 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
 
     function erc721GetTokenUsed(address addr, uint256 tokenId) external whenActive view override returns(bool) {
         return tokenUsed[addr][tokenId];
+    }
+
+    // Enroll quester. used at validateQuest and validateMission
+    function _enroll(address quester) private {
+        if (questerProgresses[quester] == QuesterProgress.NotEnrolled) {
+            allQuesters.push(quester);
+            questerProgresses[quester] = QuesterProgress.InProgress;
+            emit QuesterJoined(quester);
+        }
+    }
+
+    function getMissions() external view override returns(Types.MissionNode[] memory) {
+        return missionNodeFormulas._getMissions();
+    }
+
+    function getOutcomes() external view override returns(Types.Outcome[] memory) {
+        return outcomes._getOutcomes();
+    }
+
+    function getQuesterProgress(address quester) external view returns(QuesterProgress progress) {
+        return questerProgresses[quester];
+    }
+
+    function getMissionStatus(address quester, uint256 missionId) external view returns(bool status) {
+        return questerMissionsDone[quester][missionId];
     }
 }
