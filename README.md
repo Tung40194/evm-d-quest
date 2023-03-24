@@ -1,5 +1,7 @@
 # CAN EVM DQuest
 
+######Version: 1.1.0
+
 This project applies beacon proxy Factory upgradable pattern for creating & upgrading Quest contracts while the Dquest factory itself is upgraded following Transparent upgradable pattern
 
 CAN DQuest smart contracts
