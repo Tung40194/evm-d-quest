@@ -521,4 +521,12 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             emit QuesterJoined(quester);
         }
     }
+
+    function getMissions() external view override returns(Types.MissionNode[] memory) {
+        return missionNodeFormulas._getMissions();
+    }
+
+    function getOutcomes() external view override returns(Types.Outcome[] memory) {
+        return outcomes._getOutcomes();
+    }
 }

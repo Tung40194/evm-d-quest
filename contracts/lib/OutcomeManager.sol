@@ -93,4 +93,19 @@ library OutcomeManager {
     function _length(efficientlyResetableOutcome storage o) internal view returns (uint256) {
         return EnumerableSetUpgradeable.length(o.ero[o.outPtr]._keys);
     }
+
+    /**
+     * @dev Returns an array of outcomes.
+     * @param o efficientlyResetableOutcome to get length from.
+     * @return an array of outcomes.
+     */
+    function _getOutcomes(efficientlyResetableOutcome storage o) internal view returns(Types.Outcome[] memory) {
+        uint256 len = _length(o);
+        Types.Outcome[] memory result = new Types.Outcome[](len);
+        for(uint256 index = 0; index < len; index ++) {
+            uint256 keyIndex = o.ero[o.outPtr]._keys.at(index);
+            result[index] = o.ero[o.outPtr]._values[keyIndex];
+        }
+        return result;
+    }
 }

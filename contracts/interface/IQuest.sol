@@ -159,4 +159,16 @@ interface IQuest {
      * @return bool Returns true if the token has been marked as used for the specified mission node, false otherwise.
      */
     function erc721GetTokenUsed(address addr, uint256 tokenId) external view returns (bool);
+
+    /**
+     * @dev get missions.
+     * @return an array of mission nodes.
+     */
+    function getMissions() external view returns(Types.MissionNode[] memory);
+
+    /**
+     * @dev get outcomes.
+     * @return an array of mission outcomes.
+     */
+    function getOutcomes() external view returns(Types.Outcome[] memory);
 }
