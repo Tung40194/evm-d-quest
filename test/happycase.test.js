@@ -280,11 +280,11 @@ describe("Testing happy cases", () => {
     const pQuest = await quest.attach(questProxy1Address);
 
     // add Quester
-    await expect(await pQuest.questerProgresses(accounts[7].address)).to.equal(NOT_ENROLLED);
+    await expect(await pQuest.getQuesterProgress(accounts[7].address)).to.equal(NOT_ENROLLED);
     await advanceBlockTimestamp(20);
     quester = accounts[7].address;
-    await expect(pQuest.connect(accounts[7]).addQuester()).to.emit(pQuest, "QuesterAdded").withArgs(quester);
-    await expect(await pQuest.questerProgresses(accounts[7].address)).to.equal(IN_PROGRESS);
+    await expect(pQuest.connect(accounts[7]).join()).to.emit(pQuest, "QuesterJoined").withArgs(quester);
+    await expect(await pQuest.getQuesterProgress(accounts[7].address)).to.equal(IN_PROGRESS);
 
     /*
      * DISTRIBUTING NFT1 AND NFT2 TO QUESTER
@@ -304,6 +304,13 @@ describe("Testing happy cases", () => {
     await nft2I.connect(accounts[0]).safeMint(quester, "give quester id #4");
     await nft2I.connect(accounts[0]).safeMint(quester, "give quester id #5");
 
+    // validate mission status
+    await expect(pQuest.connect(accounts[7]).validateMission(1)).to.revertedWith("Not a mission");
+    await pQuest.connect(accounts[7]).validateMission(2);
+    await pQuest.connect(accounts[7]).validateMission(3);
+    await expect(await pQuest.getMissionStatus(quester, 2)).to.equal(false);
+    await expect(await pQuest.getMissionStatus(quester, 3)).to.equal(true);
+
     /*
      * VALIDADE (M1 OR M2) (ONLY QUESTER CAN DO THIS)
      *
@@ -312,7 +319,7 @@ describe("Testing happy cases", () => {
     // now since mission formula is (M1 OR M2) so either one of the two being eligible will drive the whole quest validation true.
     // or simply speaking, quester(accounts[7]) is elligible and validation result should be marked as completed
     await pQuest.connect(accounts[7]).validateQuest();
-    await expect(await pQuest.questerProgresses(quester)).to.equal(COMPLETED);
+    await expect(await pQuest.getQuesterProgress(quester)).to.equal(COMPLETED);
 
     /*
      * REWARD SETTING UP. REWARD OWNER NEEDS TO APPROVE QUEST TO TRANSFER ALL HIS 100 RTD
@@ -326,7 +333,7 @@ describe("Testing happy cases", () => {
      *
      */
     await pQuest.connect(accounts[4]).executeQuestOutcome(quester);
-    await expect(await pQuest.questerProgresses(quester)).to.equal(REWARDED);
+    await expect(await pQuest.getQuesterProgress(quester)).to.equal(REWARDED);
     // expect erc20 balance
     await expect(await ftstandardI.balanceOf(quester)).to.equal(toBeRewarded);
   });

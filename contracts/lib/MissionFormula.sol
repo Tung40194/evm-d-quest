@@ -89,4 +89,28 @@ library MissionFormula {
         require(f.erf[f.rstPtr]._keys.contains(nodeId), "Null node");
         return f.erf[f.rstPtr]._values[nodeId];
     }
+
+    /**
+     * @dev Returns the length of mission formula.
+     * @param f Formula to get mission node from.
+     * @return Mission length of the formula (the number of nodes).
+     */
+    function _length(efficientlyResetableFormula storage f) internal view returns (uint256) {
+        return f.erf[f.rstPtr]._keys.length();
+    }
+
+    /**
+     * @dev Returns an array of mission nodes.
+     * @param f Formula to get mission node from.
+     * @return an array of mission nodes.
+     */
+    function _getMissions(efficientlyResetableFormula storage f) internal view returns (Types.MissionNode[] memory) {
+        uint256 len = _length(f);
+        Types.MissionNode[] memory result = new Types.MissionNode[](len);
+        for (uint256 index = 0; index < len; index++) {
+            uint256 keyIndex = f.erf[f.rstPtr]._keys.at(index);
+            result[index] = f.erf[f.rstPtr]._values[keyIndex];
+        }
+        return result;
+    }
 }
