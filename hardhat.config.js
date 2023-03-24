@@ -39,7 +39,7 @@ module.exports = {
     },
     polygon: {
       url: "https://polygon-rpc.com",
-      gasPrice: 80000000000,
+      gasPrice: 150000000000,
       accounts: [process.env.PRIVATE_KEY]
     }
   },
@@ -51,7 +51,7 @@ module.exports = {
     coinmarketcap: process.env.COINMARKETCAP_KEY
   },
   etherscan: {
-    apiKey: process.env.SCAN_API_KEY
+    apiKey: process.env.POLYGONSCAN_API_KEY,
   },
   contractSizer: {
     alphaSort: true,
