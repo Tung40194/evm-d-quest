@@ -23,11 +23,11 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     uint256 private formulaRootNodeId;
 
     // contract storage
-    MissionFormula.efficientlyResetableFormula public missionNodeFormulas;
-    OutcomeManager.efficientlyResetableOutcome public outcomes;
+    MissionFormula.efficientlyResetableFormula private missionNodeFormulas;
+    OutcomeManager.efficientlyResetableOutcome private outcomes;
     address[] public allQuesters;
-    mapping(address => QuesterProgress) public questerProgresses;
-    mapping(address => mapping(uint256 => bool)) public questerMissionsDone;
+    mapping(address => QuesterProgress) private questerProgresses;
+    mapping(address => mapping(uint256 => bool)) private questerMissionsDone;
     uint256 public startTimestamp;
     uint256 public endTimestamp;
     bool public isRewardAvailable;
@@ -528,5 +528,13 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
 
     function getOutcomes() external view override returns(Types.Outcome[] memory) {
         return outcomes._getOutcomes();
+    }
+
+    function getQuesterProgress(address quester) external view returns(QuesterProgress progress) {
+        return questerProgresses[quester];
+    }
+
+    function getMissionStatus(address quester, uint256 missionId) external view returns(bool status) {
+        return questerMissionsDone[quester][missionId];
     }
 }

@@ -162,13 +162,28 @@ interface IQuest {
 
     /**
      * @dev get missions.
-     * @return an array of mission nodes.
+     * @return missions an array of mission nodes.
      */
-    function getMissions() external view returns (Types.MissionNode[] memory);
+    function getMissions() external view returns (Types.MissionNode[] memory missions);
 
     /**
      * @dev get outcomes.
-     * @return an array of mission outcomes.
+     * @return outcomes an array of mission outcomes.
      */
-    function getOutcomes() external view returns (Types.Outcome[] memory);
+    function getOutcomes() external view returns (Types.Outcome[] memory outcomes);
+
+    /**
+     * @dev get quester's progress.
+     * @param quester the address of a quester
+     * @return progress an enum defined at `enum QuesterProgress`.
+     */
+    function getQuesterProgress(address quester) external view returns(QuesterProgress progress);
+
+    /**
+     * @dev get quester's mission status.
+     * @param quester the quester's address
+     * @param missionId the id of the mission (it's the node id in mission formula)
+     * @return status mission status of a quester on a mission whose id is missionId.
+     */
+    function getMissionStatus(address quester, uint256 missionId) external view returns(bool status);
 }
