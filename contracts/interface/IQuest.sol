@@ -164,11 +164,11 @@ interface IQuest {
      * @dev get missions.
      * @return an array of mission nodes.
      */
-    function getMissions() external view returns(Types.MissionNode[] memory);
+    function getMissions() external view returns (Types.MissionNode[] memory);
 
     /**
      * @dev get outcomes.
      * @return an array of mission outcomes.
      */
-    function getOutcomes() external view returns(Types.Outcome[] memory);
+    function getOutcomes() external view returns (Types.Outcome[] memory);
 }

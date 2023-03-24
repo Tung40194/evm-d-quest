@@ -95,7 +95,7 @@ library MissionFormula {
      * @param f Formula to get mission node from.
      * @return Mission length of the formula (the number of nodes).
      */
-    function _length(efficientlyResetableFormula storage f) internal view returns(uint256) {
+    function _length(efficientlyResetableFormula storage f) internal view returns (uint256) {
         return f.erf[f.rstPtr]._keys.length();
     }
 
@@ -104,10 +104,10 @@ library MissionFormula {
      * @param f Formula to get mission node from.
      * @return an array of mission nodes.
      */
-    function _getMissions(efficientlyResetableFormula storage f) internal view returns(Types.MissionNode[] memory) {
+    function _getMissions(efficientlyResetableFormula storage f) internal view returns (Types.MissionNode[] memory) {
         uint256 len = _length(f);
         Types.MissionNode[] memory result = new Types.MissionNode[](len);
-        for(uint256 index = 0; index < len; index ++) {
+        for (uint256 index = 0; index < len; index++) {
             uint256 keyIndex = f.erf[f.rstPtr]._keys.at(index);
             result[index] = f.erf[f.rstPtr]._values[keyIndex];
         }
