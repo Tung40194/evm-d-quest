@@ -6,7 +6,7 @@ import "../lib/Types.sol";
  * @notice Mission contract is used to verify certain mission logic and cache mission status
  * @notice MUST define data schema to decode object node.data in validateMission() method.
  * Quest Admin utilizing Dquest::createQuest will follow schema to encode the data
-*/
+ */
 interface IMission {
     //TODO just emit enough
     event MissionValidated(address quester, Types.MissionNode node, bool result);

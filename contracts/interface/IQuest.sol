@@ -6,7 +6,7 @@ import "../lib/Types.sol";
 /*
  * @title An interface for a Quest contract
  * @notice Quest contract is use to manage Questers, Missions and Outcomes
-*/
+ */
 interface IQuest {
     /// @dev Defines the possible states of a quester's status to current quest.
     /// States:
@@ -81,7 +81,7 @@ interface IQuest {
     /**
      * @notice Set the outcomes for this quest.
      * @param outcomes An array of Outcome structs.
-    */
+     */
     function setOutcomes(Types.Outcome[] calldata outcomes) external;
 
     /**
@@ -126,7 +126,7 @@ interface IQuest {
      * @dev This function is public and can only be called by anyone.
      * Whether the quester is eligible to receive the outcome depends on the allQuesterStatuses mapping.
      * @param quester The quester who wants to receive the quest's outcome.
-    */
+     */
     function executeQuestOutcome(address quester) external;
 
     /**
