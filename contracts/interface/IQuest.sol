@@ -177,7 +177,7 @@ interface IQuest {
      * @param quester the address of a quester
      * @return progress an enum defined at `enum QuesterProgress`.
      */
-    function getQuesterProgress(address quester) external view returns(QuesterProgress progress);
+    function getQuesterProgress(address quester) external view returns (QuesterProgress progress);
 
     /**
      * @dev get quester's mission status.
@@ -185,5 +185,5 @@ interface IQuest {
      * @param missionId the id of the mission (it's the node id in mission formula)
      * @return status mission status of a quester on a mission whose id is missionId.
      */
-    function getMissionStatus(address quester, uint256 missionId) external view returns(bool status);
+    function getMissionStatus(address quester, uint256 missionId) external view returns (bool status);
 }

@@ -304,7 +304,6 @@ describe("Testing happy cases", () => {
     await nft2I.connect(accounts[0]).safeMint(quester, "give quester id #4");
     await nft2I.connect(accounts[0]).safeMint(quester, "give quester id #5");
 
-
     // validate mission status
     await expect(pQuest.connect(accounts[7]).validateMission(1)).to.revertedWith("Not a mission");
     await pQuest.connect(accounts[7]).validateMission(2);
