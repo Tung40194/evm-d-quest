@@ -32,9 +32,9 @@ interface IQuest {
     /// @param quester The address of the quester who outcome is being executed on.
     event OutcomeExecuted(address indexed quester);
 
-    /// @notice This event is triggered when a new quester is added to the system.
+    /// @notice This event is triggered when a new quester is enrolled to the system.
     /// @param quester The address of the newly added quester.
-    event QuesterAdded(address indexed quester);
+    event QuesterJoined(address indexed quester);
 
     /// @notice This event is triggered when native coin is transfered to Quest contract
     /// @param sender The address of sender.
@@ -129,11 +129,11 @@ interface IQuest {
     /// QUESTER FUNCTIONS
 
     /**
-     * @dev Adds a new quester to the list of all questers.
-     * Only callable when the contract is active.
-     * Emits a `QuesterAdded` event.
+     * @dev quester calls this function to get enrolled.
+     * Only callable when the contract is active and only when user has not joined before.
+     * Emits a `QuesterJoined` event.
      */
-    function addQuester() external;
+    function join() external;
 
     /**
      * @dev Returns the total number of questers.

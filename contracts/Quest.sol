@@ -160,7 +160,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         if (questerProgresses[msg.sender] == QuesterProgress.NotEnrolled) {
             allQuesters.push(msg.sender);
             questerProgresses[msg.sender] = QuesterProgress.InProgress;
-            emit QuesterAdded(msg.sender);
+            emit QuesterJoined(msg.sender);
         }
 
         bool result = evaluateMissionFormulaTree(formulaRootNodeId);
@@ -191,10 +191,10 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         _unpause();
     }
 
-    function addQuester() external override whenActive questerNotEnrolled {
+    function join() external override whenActive questerNotEnrolled {
         allQuesters.push(msg.sender);
         questerProgresses[msg.sender] = QuesterProgress.InProgress;
-        emit QuesterAdded(msg.sender);
+        emit QuesterJoined(msg.sender);
     }
 
     function getTotalQuesters() external view override returns (uint256 totalQuesters) {

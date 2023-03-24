@@ -283,7 +283,7 @@ describe("Testing happy cases", () => {
     await expect(await pQuest.questerProgresses(accounts[7].address)).to.equal(NOT_ENROLLED);
     await advanceBlockTimestamp(20);
     quester = accounts[7].address;
-    await expect(pQuest.connect(accounts[7]).addQuester()).to.emit(pQuest, "QuesterAdded").withArgs(quester);
+    await expect(pQuest.connect(accounts[7]).join()).to.emit(pQuest, "QuesterJoined").withArgs(quester);
     await expect(await pQuest.questerProgresses(accounts[7].address)).to.equal(IN_PROGRESS);
 
     /*
