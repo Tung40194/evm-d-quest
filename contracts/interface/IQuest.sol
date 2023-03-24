@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
+
 import "../lib/Types.sol";
 
-/// @title An interface for a Quest contract
-/// @notice Quest contract is use to manage Questers, Missions and Outcomes
+/*
+ * @title An interface for a Quest contract
+ * @notice Quest contract is use to manage Questers, Missions and Outcomes
+*/
 interface IQuest {
     /// @dev Defines the possible states of a quester's status to current quest.
     /// States:
@@ -41,8 +44,6 @@ interface IQuest {
     /// @param amount The total amount of native coin reward.
     event Received(address indexed sender, uint indexed amount);
 
-    /// SETTER
-
     /**
      * @dev Sets the formulas for the mission nodes.
      * @notice Only the contract owner can call this function.
@@ -77,11 +78,11 @@ interface IQuest {
      */
     function setMissionNodeFormulas(Types.MissionNode[] calldata nodes) external;
 
-    /// @notice Set the outcomes for this quest.
-    /// @param outcomes An array of Outcome structs.
+    /**
+     * @notice Set the outcomes for this quest.
+     * @param outcomes An array of Outcome structs.
+    */
     function setOutcomes(Types.Outcome[] calldata outcomes) external;
-
-    /// QUEST FUNCTIONS
 
     /**
      * @dev Sets the status of a mission for a specific quester.
@@ -120,13 +121,13 @@ interface IQuest {
      */
     function validateMission(uint256 missionNodeId) external returns (bool isComplete);
 
-    /// @notice Execute a defined outcome of the quest.
-    /// @dev This function is public and can only be called by anyone.
-    /// Whether the quester is eligible to receive the outcome depends on the allQuesterStatuses mapping.
-    /// @param quester The quester who wants to receive the quest's outcome.
+    /**
+     * @notice Execute a defined outcome of the quest.
+     * @dev This function is public and can only be called by anyone.
+     * Whether the quester is eligible to receive the outcome depends on the allQuesterStatuses mapping.
+     * @param quester The quester who wants to receive the quest's outcome.
+    */
     function executeQuestOutcome(address quester) external;
-
-    /// QUESTER FUNCTIONS
 
     /**
      * @dev quester calls this function to get enrolled.
@@ -142,18 +143,18 @@ interface IQuest {
     function getTotalQuesters() external view returns (uint256 totalQuesters);
 
     /**
-     * @dev Marks an ERC721 token as used for a specific mission node.
+     * @dev Marks an ERC721 token as used for this Quest.
      * @param missionNodeId The ID of the mission node to associate the token with.
-     * @param addr The address of the owner of the token.
-     * @param tokenId The ID of the token to mark as used.
+     * @param tokenAddr The address of the ERC721 token contract.
+     * @param tokenId The ID of the ERC721 token to mark as used.
      * @notice This function can only be called by the mission handler associated with the specified mission node.
-     * @notice Once a token has been marked as used for a mission node, it cannot be used for any other mission node.
+     * @notice Once a token has been marked as used for a quest, it cannot be used by any other questers on that Quest.
      */
-    function erc721SetTokenUsed(uint256 missionNodeId, address addr, uint256 tokenId) external;
+    function erc721SetTokenUsed(uint256 missionNodeId, address tokenAddr, uint256 tokenId) external;
 
     /**
-     * @dev Checks if an ERC721 token has been marked as used for a specific mission node.
-     * @param addr The address of the owner of the token.
+     * @dev Checks if an ERC721 token has been marked as used for this Quest.
+     * @param addr The address of the ERC721 token contract.
      * @param tokenId The ID of the token to check.
      * @return bool Returns true if the token has been marked as used for the specified mission node, false otherwise.
      */
