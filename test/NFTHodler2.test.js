@@ -118,11 +118,11 @@ describe("Testing new mission handler for erc721 enumerable contracts", () => {
     const nft3I = await nft3.attach(deployedNft3.address);
 
     // add Quester
-    await expect(await pQuest.questerProgresses(accounts[7].address)).to.equal(NOT_ENROLLED);
+    await expect(await pQuest.getQuesterProgress(accounts[7].address)).to.equal(NOT_ENROLLED);
     await advanceBlockTimestamp(20);
     quester = accounts[7].address;
-    await expect(pQuest.connect(accounts[7]).addQuester()).to.emit(pQuest, "QuesterAdded").withArgs(quester);
-    await expect(await pQuest.questerProgresses(accounts[7].address)).to.equal(IN_PROGRESS);
+    await expect(pQuest.connect(accounts[7]).join()).to.emit(pQuest, "QuesterJoined").withArgs(quester);
+    await expect(await pQuest.getQuesterProgress(accounts[7].address)).to.equal(IN_PROGRESS);
 
     /*
      * FAIL VALIDADE (M1) (ONLY QUESTER CAN DO THIS)
@@ -134,7 +134,7 @@ describe("Testing new mission handler for erc721 enumerable contracts", () => {
     // now since mission formula is (M1 OR M2) so either one of the two being eligible will drive the whole quest validation true.
     // or simply speaking, quester(accounts[7]) is elligible and validation result should be marked as completed
     await pQuest.connect(accounts[7]).validateQuest();
-    await expect(await pQuest.questerProgresses(quester)).to.equal(IN_PROGRESS);
+    await expect(await pQuest.getQuesterProgress(quester)).to.equal(IN_PROGRESS);
 
     /*
      * PASS VALIDADE (M1) (ONLY QUESTER CAN DO THIS)
@@ -143,7 +143,7 @@ describe("Testing new mission handler for erc721 enumerable contracts", () => {
 
     await nft3I.connect(accounts[0]).safeMint(quester, 10);
     await pQuest.connect(accounts[7]).validateQuest();
-    await expect(await pQuest.questerProgresses(quester)).to.equal(COMPLETED);
+    await expect(await pQuest.getQuesterProgress(quester)).to.equal(COMPLETED);
 
     /*
      * REWARD SETTING UP. REWARD OWNER NEEDS TO APPROVE QUEST TO TRANSFER ALL HIS 100 RTD
@@ -157,7 +157,7 @@ describe("Testing new mission handler for erc721 enumerable contracts", () => {
      *
      */
     await pQuest.connect(accounts[4]).executeQuestOutcome(quester);
-    await expect(await pQuest.questerProgresses(quester)).to.equal(REWARDED);
+    await expect(await pQuest.getQuesterProgress(quester)).to.equal(REWARDED);
     // expect erc20 balance
     await expect(await ftstandardI.balanceOf(quester)).to.equal(toBeRewarded);
   });
