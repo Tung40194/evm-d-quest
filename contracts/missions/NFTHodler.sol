@@ -8,7 +8,9 @@ import "../interface/IQuest.sol";
 import "../interface/IDQuest.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-contract NFThodler is IMission {
+// To verify if a user has any NFT token in a given range
+// mission data schema: (address token_address, uint256 start_id, uint256 stop_id)
+contract NFTHodler is IMission {
     using BytesConversion for bytes;
 
     // address of dquest contract

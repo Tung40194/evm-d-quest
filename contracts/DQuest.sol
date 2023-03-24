@@ -87,7 +87,7 @@ contract DQuest is IDQuest, Initializable, OwnableUpgradeable {
         return quests.values();
     }
 
-    function getQuests(address quester) external virtual view override returns (address[] memory) {
-        return adminQuests[quester].values();
+    function getQuests(address admin) external virtual view override returns (address[] memory) {
+        return adminQuests[admin].values();
     }
 }
