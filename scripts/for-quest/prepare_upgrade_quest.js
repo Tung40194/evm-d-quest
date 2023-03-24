@@ -9,8 +9,8 @@
 
 async function main() {
   //TODO: change the nft proxy address (any beacon proxy)
-  const proxyAddress = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9";
-  const newQuestImplementation = await ethers.getContractFactory("QuestV2");
+  const proxyAddress = "0xFc542c46141dBDf0b8c89065b83F1f02d527815B";
+  const newQuestImplementation = await ethers.getContractFactory("Quest");
 
   // Checking new implemenation storage layout compatibility
   console.log("| - Preparing upgrade & get the implementation contract...");

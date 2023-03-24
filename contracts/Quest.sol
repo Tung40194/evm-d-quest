@@ -156,7 +156,13 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         }
     }
 
-    function validateQuest() external override onlyQuester whenActive whenNotPaused returns (bool) {
+    function validateQuest() external override whenActive whenNotPaused returns (bool) {
+        if (questerProgresses[msg.sender] == QuesterProgress.NotEnrolled) {
+            allQuesters.push(msg.sender);
+            questerProgresses[msg.sender] = QuesterProgress.InProgress;
+            emit QuesterAdded(msg.sender);
+        }
+
         bool result = evaluateMissionFormulaTree(formulaRootNodeId);
         if (result == true) {
             questerProgresses[msg.sender] = QuesterProgress.Completed;
@@ -164,7 +170,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         return result;
     }
 
-    function validateMission(uint256 missionNodeId) public override onlyQuester whenActive whenNotPaused returns (bool) {
+    function validateMission(uint256 missionNodeId) public override whenActive whenNotPaused returns (bool) {
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(node.isMission == true, "Not a mission");
         bool cache = questerMissionsDone[msg.sender][missionNodeId];
