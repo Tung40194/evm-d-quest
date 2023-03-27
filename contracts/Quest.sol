@@ -402,7 +402,6 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             if(nodes[i].isMission == true) {
                 // validate for mission node
                 require(nodes[i].missionHandlerAddress != address(0x0), "handler address mustn't be 0x0");
-                require(nodes[i].oracleAddress != address(0x0), "oracle address mustn't be 0x0");
                 require((nodes[i].leftNode | nodes[i].rightNode) == 0, "M node's left/right id must be 0");
                 require(nodes[i].data.length != 0, "data must not be empty");
             } else {

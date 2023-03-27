@@ -54,7 +54,7 @@ describe("Testing new mission handler for erc721 enumerable contracts", () => {
     start = web3.eth.abi.encodeParameter("uint256", "7");
     end = web3.eth.abi.encodeParameter("uint256", "10000000000000000000000000000");
     data = [addr, start, end];
-    const M1_node = [2, true, deployedMission.address, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, data];
+    const M1_node = [2, true, deployedMission.address, DONT_CARE_OPERATOR, 0, 0, data];
 
     missionFormula = [M1_node];
 
