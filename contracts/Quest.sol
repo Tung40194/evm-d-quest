@@ -13,8 +13,8 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
-    using MissionFormula for MissionFormula.efficientlyResetableFormula;
-    using OutcomeManager for OutcomeManager.efficientlyResetableOutcome;
+    using MissionFormula for MissionFormula.EfficientlyResetableFormula;
+    using OutcomeManager for OutcomeManager.EfficientlyResetableOutcome;
     using mNodeId2Iterator for mNodeId2Iterator.ResetableId2iterator;
 
     // binary tree cycles detection helpers
@@ -23,8 +23,8 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     uint256 private formulaRootNodeId;
 
     // contract storage
-    MissionFormula.efficientlyResetableFormula private missionNodeFormulas;
-    OutcomeManager.efficientlyResetableOutcome private outcomes;
+    MissionFormula.EfficientlyResetableFormula private missionNodeFormulas;
+    OutcomeManager.EfficientlyResetableOutcome private outcomes;
     address[] public allQuesters;
     mapping(address => QuesterProgress) private questerProgresses;
     mapping(address => mapping(uint256 => bool)) private questerMissionsDone;
@@ -402,7 +402,6 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             if(nodes[i].isMission == true) {
                 // validate for mission node
                 require(nodes[i].missionHandlerAddress != address(0x0), "handler address mustn't be 0x0");
-                require(nodes[i].oracleAddress != address(0x0), "oracle address mustn't be 0x0");
                 require((nodes[i].leftNode | nodes[i].rightNode) == 0, "M node's left/right id must be 0");
                 require(nodes[i].data.length != 0, "data must not be empty");
             } else {
