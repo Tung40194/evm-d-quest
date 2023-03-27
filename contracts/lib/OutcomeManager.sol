@@ -27,18 +27,18 @@ library OutcomeManager {
      * @param ero Mapping to store outcomes.
      * @param outPtr Pointer to the current formula in the mapping.
      */
-    struct efficientlyResetableOutcome {
+    struct EfficientlyResetableOutcome {
         mapping(uint256 => Outcomes) ero;
         uint256 outPtr;
     }
 
     /**
-     * @dev Adds outcome to the given efficientlyResetableOutcome and resets it.
-     * @param o efficientlyResetableOutcome to add outcome to.
+     * @dev Adds outcome to the given EfficientlyResetableOutcome and resets it.
+     * @param o EfficientlyResetableOutcome to add outcome to.
      * @param outcomes Array of outcomes.
      * @return Boolean indicating success.
      */
-    function _set(efficientlyResetableOutcome storage o, Types.Outcome[] memory outcomes) internal returns (bool) {
+    function _set(EfficientlyResetableOutcome storage o, Types.Outcome[] memory outcomes) internal returns (bool) {
         _reset(o);
         if (outcomes.length != 0) {
             for (uint256 idx = 0; idx < outcomes.length; idx++) {
@@ -53,13 +53,13 @@ library OutcomeManager {
     }
 
     /**
-     * @dev Returns the outcome with the given id from the given efficientlyResetableOutcome.
-     * @param o efficientlyResetableOutcome to get outcome from.
+     * @dev Returns the outcome with the given id from the given EfficientlyResetableOutcome.
+     * @param o EfficientlyResetableOutcome to get outcome from.
      * @param outcomeId Id of the outcome to get. Must exist.
      * @return Outcome with the given id.
      */
     function _getOutcome(
-        efficientlyResetableOutcome storage o,
+        EfficientlyResetableOutcome storage o,
         uint256 outcomeId
     ) internal view returns (Types.Outcome memory) {
         require(o.ero[o.outPtr]._keys.contains(outcomeId), "Null Outcome");
@@ -67,39 +67,39 @@ library OutcomeManager {
     }
 
     /**
-     * @dev Resets the given efficientlyResetableOutcome by incrementing the pointer to the next Outcome in the mapping.
+     * @dev Resets the given EfficientlyResetableOutcome by incrementing the pointer to the next Outcome in the mapping.
      * @param o Outcome to reset.
      */
-    function _reset(efficientlyResetableOutcome storage o) private {
+    function _reset(EfficientlyResetableOutcome storage o) private {
         // inc pointer to reset mapping; omit id #0
         o.outPtr++;
     }
 
     /**
-     * @dev Replace the current outcome with the new one for the given id in efficientlyResetableOutcome.
-     * @param o efficientlyResetableOutcome to replace outcome to.
+     * @dev Replace the current outcome with the new one for the given id in EfficientlyResetableOutcome.
+     * @param o EfficientlyResetableOutcome to replace outcome to.
      * @param outcomeId Id of the outcome to replace. Must exist.
      */
-    function _replace(efficientlyResetableOutcome storage o, uint256 outcomeId, Types.Outcome memory outcome) internal {
+    function _replace(EfficientlyResetableOutcome storage o, uint256 outcomeId, Types.Outcome memory outcome) internal {
         require(o.ero[o.outPtr]._keys.contains(outcomeId), "Null Outcome");
         o.ero[o.outPtr]._values[outcomeId] = outcome;
     }
 
     /**
-     * @dev Returns the outcome length of the given efficientlyResetableOutcome.
-     * @param o efficientlyResetableOutcome to get length from.
-     * @return outcomeLength with the given efficientlyResetableOutcome.
+     * @dev Returns the outcome length of the given EfficientlyResetableOutcome.
+     * @param o EfficientlyResetableOutcome to get length from.
+     * @return outcomeLength with the given EfficientlyResetableOutcome.
      */
-    function _length(efficientlyResetableOutcome storage o) internal view returns (uint256) {
+    function _length(EfficientlyResetableOutcome storage o) internal view returns (uint256) {
         return EnumerableSetUpgradeable.length(o.ero[o.outPtr]._keys);
     }
 
     /**
      * @dev Returns an array of outcomes.
-     * @param o efficientlyResetableOutcome to get length from.
+     * @param o EfficientlyResetableOutcome to get length from.
      * @return an array of outcomes.
      */
-    function _getOutcomes(efficientlyResetableOutcome storage o) internal view returns (Types.Outcome[] memory) {
+    function _getOutcomes(EfficientlyResetableOutcome storage o) internal view returns (Types.Outcome[] memory) {
         uint256 len = _length(o);
         Types.Outcome[] memory result = new Types.Outcome[](len);
         for (uint256 index = 0; index < len; index++) {
