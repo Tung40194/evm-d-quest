@@ -154,12 +154,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     function validateQuest() external override whenActive whenNotPaused returns (bool) {
-        _enroll(msg.sender);
-        bool result = _evaluateMissionFormulaTree(formulaRootNodeId);
-        if (result == true) {
-            questerProgresses[msg.sender] = QuesterProgress.Completed;
-        }
-        return result;
+        return _validateQuest(msg.sender);
     }
 
     function validateMission(uint256 missionNodeId) public override whenActive whenNotPaused returns (bool) {
@@ -242,13 +237,8 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         }
     }
 
-    /**
-    * @dev Executes the quest outcome for the specified quester.
-    * Only the quest can call this function when the quest is active.
-    * @param _quester The address of the quester whose outcome to execute.
-    */
     function executeQuestOutcome(address _quester) external override whenActive nonReentrant {
-        require(questerProgresses[_quester] == QuesterProgress.Completed, "Quest not completed");
+        require(_validateQuest(_quester) == true, "Quest validation not completed");
         require(isRewardAvailable, "The Quest's run out of Reward");
         for (uint256 i = 0; i < outcomes._length(); i++) {
             Types.Outcome memory outcome = outcomes._getOutcome(i);
@@ -520,6 +510,21 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             questerProgresses[quester] = QuesterProgress.InProgress;
             emit QuesterJoined(quester);
         }
+    }
+
+    // a  private copy of validateQuest() function with an open parameter. Used at executeQuestOutcome
+    // TODO remove when validateQuest() is upgraded to validateQuest(address quester)
+    function _validateQuest(address quester) private returns (bool) {
+        _enroll(quester);
+        if (questerProgresses[quester] == QuesterProgress.Completed)
+            return true;
+
+        bool result = _evaluateMissionFormulaTree(formulaRootNodeId);
+        if (result == true) {
+            questerProgresses[quester] = QuesterProgress.Completed;
+        }
+
+        return result;
     }
 
     function getMissions() external view override returns(Types.MissionNode[] memory) {
