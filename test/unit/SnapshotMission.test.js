@@ -200,4 +200,33 @@ describe("Snapshot Mission Handler Unit Test", () => {
       expect(await snapshotQuestContract.getMissionStatus(quester.address, missionId)).to.equal(true);
     });
   });
+
+  describe("withdraw()", () => {
+    beforeEach(async () => {
+      ({ missionHandlerContract } = await setupQuest(
+        dQuestContract,
+        operatorContract,
+        linkTokenContract,
+        "SnapshotMission",
+        jobId
+      ));
+      missionHandlerAddress = missionHandlerContract.address;
+
+      linkTokenContract.transfer(missionHandlerAddress, 10000);
+    });
+
+    it("should revert when caller is not owner", async () => {
+      await expect(missionHandlerContract.connect(quester).withdraw()).to.be.revertedWith("Only callable by owner");
+    });
+
+    it("should withdraw all balance to owner", async () => {
+      const tokenOfMissionHandler = await linkTokenContract.balanceOf(missionHandlerContract.address);
+
+      const beforeTokenOfOwner = await linkTokenContract.balanceOf(owner.address);
+      await missionHandlerContract.withdraw();
+      const afterTokenOfOwner = await linkTokenContract.balanceOf(owner.address);
+
+      expect(tokenOfMissionHandler).to.equal(afterTokenOfOwner.sub(beforeTokenOfOwner));
+    });
+  });
 });
