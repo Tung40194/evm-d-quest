@@ -117,6 +117,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         require(msg.sender == node.missionHandlerAddress,"States update not allowed");
         require(questerProgresses[quester] != QuesterProgress.NotEnrolled, "Not a quester");
         questerMissionsDone[quester][missionNodeId] = isMissionDone;
+        emit MissionStatusSet(quester, missionNodeId, isMissionDone);
     }
 
     function setMissionNodeFormulas(Types.MissionNode[] calldata nodes)

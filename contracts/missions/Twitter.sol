@@ -45,8 +45,6 @@ contract Twitter is IMission, ChainlinkMissionHandler {
         // send request to chainlink oracle
         request(apiUrl);
 
-        //emit MissionValidated(quester, node);
-
         // this is off-chain mission, return false by default
         return false;
     }
