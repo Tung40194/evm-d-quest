@@ -22,13 +22,13 @@ contract DQuest is IDQuest, Initializable, OwnableUpgradeable {
         uint256 startTime,
         uint256 endTime
     );
-    
+
     Beacon internal beacon;
     //TODO improve storage for quests/proxies and adminQuests
     // managing all quest/proxies addresses
     EnumerableSetUpgradeable.AddressSet private quests;
     //mapping user address to his created quests addresses
-    mapping (address => EnumerableSetUpgradeable.AddressSet) private adminQuests;
+    mapping(address => EnumerableSetUpgradeable.AddressSet) private adminQuests;
 
     // prettier-ignore
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -79,15 +79,15 @@ contract DQuest is IDQuest, Initializable, OwnableUpgradeable {
         beacon.updateContract(implContract);
     }
 
-    function isQuest(address contractAddr) external virtual view override returns(bool) {
+    function isQuest(address contractAddr) external view virtual override returns (bool) {
         return (quests.contains(contractAddr));
     }
 
-    function getAllQuests() external virtual view override returns (address[] memory) {
+    function getAllQuests() external view virtual override returns (address[] memory) {
         return quests.values();
     }
 
-    function getQuests(address admin) external virtual view override returns (address[] memory) {
+    function getQuests(address admin) external view virtual override returns (address[] memory) {
         return adminQuests[admin].values();
     }
 }
