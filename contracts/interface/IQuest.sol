@@ -44,6 +44,12 @@ interface IQuest {
     /// @param amount The total amount of native coin reward.
     event Received(address indexed sender, uint indexed amount);
 
+    /// @notice this event is triggered when a mission status is updated
+    /// @param quester the quester address
+    /// @param missionNodeId the id of the mission node whose status to be updated
+    /// @param result the mission validation result sent back from mission handlers
+    event MissionStatusSet(address quester, uint256 missionNodeId, bool result);
+
     /**
      * @dev Sets the formulas for the mission nodes.
      * @notice Only the contract owner can call this function.
