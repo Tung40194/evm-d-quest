@@ -88,9 +88,6 @@ contract SnapshotMission is IMission, IChainlinkMissionHandler, ChainlinkClient,
         // send request to chainlink oracle
         request(apiUrl);
 
-        // // TODO: emit event if needed
-        // emit MissionValidated(quester, node);
-
         // this is off-chain mission, return false by default
         return false;
     }
