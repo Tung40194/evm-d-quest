@@ -3,7 +3,7 @@ const { ethers, upgrades } = require("hardhat");
 
 async function main() {
     // Snapshot deployment needs a Quest deployment prior to it
-    const dQuest = "0x52fb360464f42B658445138A44B7762D6d0f42Cf";
+    const dQuest = "0x43dCe33c057b4e38718eD99B28621A7737Ee929C";
     const linkAddr = "0xb0897686c545045aFc77CF20eC7A532E3120E0F1";
     const oracleAddr = "0xF71128a7601D0A8a86fA79F74f6F0a3F35F8f2bC";
     const jobId = "0x3437626136633532363338323431323538366432396531626134666131626338";
