@@ -54,7 +54,7 @@ describe("Testing happy cases", () => {
 
   it("Should create a quest with 1-node dummy mission formula", async () => {
     // building a formula directed binary tree
-    const node1 = [1, true, DONT_CARE_ADDRESS, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
+    const node1 = [1, true, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
     missionFormula = [node1];
 
     // building outcomes
@@ -79,11 +79,11 @@ describe("Testing happy cases", () => {
 
   it("Should create a quest with 5-node dummy mission formula", async () => {
     // building a formula directed binary tree
-    const node1 = [1, false, DONT_CARE_ADDRESS, DONT_CARE_ADDRESS, AND, 2, 3, DONT_CARE_ABR_BYTES];
-    const node2 = [2, true, DONT_CARE_ADDRESS, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
-    const node3 = [3, false, DONT_CARE_ADDRESS, DONT_CARE_ADDRESS, AND, 4, 5, DONT_CARE_ABR_BYTES];
-    const node4 = [4, true, DONT_CARE_ADDRESS, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
-    const node5 = [5, true, DONT_CARE_ADDRESS, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
+    const node1 = [1, false, DONT_CARE_ADDRESS, AND, 2, 3, DONT_CARE_ABR_BYTES];
+    const node2 = [2, true, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
+    const node3 = [3, false, DONT_CARE_ADDRESS, AND, 4, 5, DONT_CARE_ABR_BYTES];
+    const node4 = [4, true, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
+    const node5 = [5, true, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
     missionFormula = [node1, node2, node3, node4, node5];
 
     // building outcomes
@@ -108,7 +108,7 @@ describe("Testing happy cases", () => {
 
   it("Should create a quest then reset mission formula for that quest", async () => {
     // building a formula directed binary tree
-    const node1 = [2, true, DONT_CARE_ADDRESS, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
+    const node1 = [2, true, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
     missionFormula = [node1];
 
     // building outcomes
@@ -134,11 +134,11 @@ describe("Testing happy cases", () => {
     const questProxy1Address = await deployedDquest.getQuest(0);
     const pQuest = await quest.attach(questProxy1Address);
 
-    const node2 = [1, false, DONT_CARE_ADDRESS, DONT_CARE_ADDRESS, AND, 2, 3, DONT_CARE_ABR_BYTES];
-    const node3 = [2, true, DONT_CARE_ADDRESS, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
-    const node4 = [3, false, DONT_CARE_ADDRESS, DONT_CARE_ADDRESS, AND, 4, 5, DONT_CARE_ABR_BYTES];
-    const node5 = [4, true, DONT_CARE_ADDRESS, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
-    const node6 = [5, true, DONT_CARE_ADDRESS, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
+    const node2 = [1, false, DONT_CARE_ADDRESS, AND, 2, 3, DONT_CARE_ABR_BYTES];
+    const node3 = [2, true, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
+    const node4 = [3, false, DONT_CARE_ADDRESS, AND, 4, 5, DONT_CARE_ABR_BYTES];
+    const node5 = [4, true, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
+    const node6 = [5, true, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, DONT_CARE_ABR_BYTES];
 
     // reset mission formula
     newMissionFormula = [node2, node3, node4, node5, node6];
@@ -167,7 +167,6 @@ describe("Testing happy cases", () => {
      *   uint256 id;
      *   bool isMission;
      *   address missionHandlerAddress;
-     *   address oracleAddress;
      *   OperatorType operatorType;
      *   uint256 leftNode;
      *   uint256 rightNode;
@@ -203,21 +202,21 @@ describe("Testing happy cases", () => {
      *  - data2 = [Y encoded, 5 encoded, 30 encoded]
      */
 
-    const OR_node = [1, false, DONT_CARE_ADDRESS, DONT_CARE_ADDRESS, OR, 2, 3, DONT_CARE_ABR_BYTES];
+    const OR_node = [1, false, DONT_CARE_ADDRESS, OR, 2, 3, DONT_CARE_ABR_BYTES];
 
     // encoding data for M1
     addr = web3.eth.abi.encodeParameter("address", deployedNft1.address);
     start = web3.eth.abi.encodeParameter("uint256", "1");
     end = web3.eth.abi.encodeParameter("uint256", "10");
     data = [addr, start, end];
-    const M1_node = [2, true, deployedMission.address, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, data];
+    const M1_node = [2, true, deployedMission.address, DONT_CARE_OPERATOR, 0, 0, data];
 
     // encoding data for M2
     addr = web3.eth.abi.encodeParameter("address", deployedNft2.address);
     start = web3.eth.abi.encodeParameter("uint256", "5");
     end = web3.eth.abi.encodeParameter("uint256", "30");
     data = [addr, start, end];
-    const M2_node = [3, true, deployedMission.address, DONT_CARE_ADDRESS, DONT_CARE_OPERATOR, 0, 0, data];
+    const M2_node = [3, true, deployedMission.address, DONT_CARE_OPERATOR, 0, 0, data];
 
     missionFormula = [OR_node, M1_node, M2_node];
 
