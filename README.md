@@ -1,5 +1,7 @@
 # CAN EVM DQuest
 
+###### Version: 2.0.0
+
 On-chain D.Quest is a set of smart contracts that allows Community admins to define Quests consisting of Missions and Rewards and Users to fulfill Missions and claim Rewards, on on-chain.
 
 This project applies beacon proxy Factory upgradable pattern for creating & upgrading Quest contracts while the Dquest factory itself is upgraded following Transparent upgradable pattern
