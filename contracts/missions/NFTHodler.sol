@@ -58,11 +58,9 @@ contract NFTHodler is IMission {
             if (!tokenInUse && owned) {
                 quest.setMissionStatus(quester, node.id, true);
                 quest.erc721SetTokenUsed(node.id, tokenAddr, index);
-                emit MissionValidated(quester, node, true);
                 return true;
             }
         }
-        emit MissionValidated(quester, node, false);
         return false;
     }
 }

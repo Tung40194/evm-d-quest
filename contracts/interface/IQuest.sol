@@ -117,7 +117,6 @@ interface IQuest {
      * @dev Validates a mission for the given mission node ID.
      * @param missionNodeId MUST be the id of mission node (isMission == true).
      * @return isComplete Returns validation result.
-     * Emits a `MissionValidated` event.
      */
     function validateMission(uint256 missionNodeId) external returns (bool isComplete);
 
