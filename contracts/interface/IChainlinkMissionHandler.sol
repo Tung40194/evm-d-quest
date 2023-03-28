@@ -4,10 +4,6 @@ pragma solidity 0.8.17;
 interface IChainlinkMissionHandler {
     event RequestFulfilled(bytes32 indexed requestId);
 
-    /// @dev send request to oracle
-    /// @param apiUrl: api url oracle will consume the response
-    function request(string memory apiUrl) external returns (bytes32 requestId);
-
     /// @dev receive response from oracle
     /// @param requestId: oracle request ID
     /// @param quester: user address to do mission
