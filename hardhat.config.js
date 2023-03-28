@@ -9,13 +9,18 @@ require("hardhat-abi-exporter");
 
 module.exports = {
   solidity: {
-    version: "0.8.17",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200
-      }
-    }
+    compilers: [
+      {
+        version: "0.8.17",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          }
+        }
+      },
+      { version: "0.7.0" }
+    ]
   },
   networks: {
     local: {
@@ -44,29 +49,30 @@ module.exports = {
     }
   },
   gasReporter: {
-    enabled: true,
+    enabled: process.env.REPORT_GAS ? true : false,
     currency: "ETH",
     showTimeSpent: true,
     gasPrice: process.env.GAS_PRICE ? process.env.GAS_PRICE : 15,
     coinmarketcap: process.env.COINMARKETCAP_KEY
   },
   etherscan: {
-    apiKey: process.env.POLYGONSCAN_API_KEY,
+    apiKey: process.env.POLYGONSCAN_API_KEY
   },
   contractSizer: {
     alphaSort: true,
     disambiguatePaths: false,
     runOnCompile: true,
     strict: true,
-    only: [],
+    only: []
   },
   abiExporter: {
     path: "./abi",
     runOnCompile: true,
     clear: true,
     flat: true,
-    only: [""],
+    only: [":DQuest$", ":Quest$"],
     spacing: 2,
     format: "json"
   }
 };
+

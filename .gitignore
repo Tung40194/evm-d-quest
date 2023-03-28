@@ -19,3 +19,5 @@ artifacts
 
 abi
 /package-lock.json
+
+.vscode
