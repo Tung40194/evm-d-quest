@@ -71,4 +71,3 @@ contract SnapshotMission is IMission, ChainlinkMissionHandler {
         emit MissionValidated(quester, node, completed);
     }
 }
-

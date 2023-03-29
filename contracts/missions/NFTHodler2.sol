@@ -60,11 +60,9 @@ contract NFTHodler2 is IMission {
                 if (startId <= tokenId && tokenId <= stopId && !tokenInUse) {
                     quest.setMissionStatus(quester, node.id, true);
                     quest.erc721SetTokenUsed(node.id, tokenAddr, index);
-                    emit MissionValidated(quester, node, true);
                     return true;
                 }
             }
-            emit MissionValidated(quester, node, false);
             return false;
         } catch (bytes memory /*lowLevelData*/) {
             // Contracts doesn't support ERC-165

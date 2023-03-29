@@ -8,9 +8,6 @@ import "../lib/Types.sol";
  * Quest Admin utilizing Dquest::createQuest will follow schema to encode the data
  */
 interface IMission {
-    //TODO just emit enough
-    event MissionValidated(address quester, Types.MissionNode node, bool result);
-
     /**
      * @dev Validates the mission submitted.
      * @notice caller MUST belong to d.quest's quest contracts. Use DQuest::isQuest() method to verify
