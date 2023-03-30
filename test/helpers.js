@@ -1,6 +1,6 @@
 const { ethers } = require("hardhat");
 const helpers = require("@nomicfoundation/hardhat-network-helpers");
-const { DONT_CARE_ADDRESS, DONT_CARE_FUNC_SELECTOR, DONT_CARE_DATA } = require("./constants");
+const { DONT_CARE_ADDRESS, DONT_CARE_FUNC_SELECTOR, DONT_CARE_DATA, DONT_CARE_BYTES32 } = require("./constants");
 
 const getCurrentBlockTimestamp = async () => {
   const blockNumber = await ethers.provider.getBlockNumber();
@@ -32,16 +32,20 @@ const advanceBlockTimestamp = async (units) => {
          /   \         /   \
   miss1(4) miss2(5) miss3(6) miss4(7)
 */
-const mockMissionFormula = (missionName, missionHandlerAddress) => {
+const mockMissionFormula = (missionName, missionHandlerAddr) => {
   const operator = {
     NONE: 0,
     AND: 0,
     OR: 1
   };
 
+  const missionHandlerAddress = missionHandlerAddr || DONT_CARE_ADDRESS;
+
   const abiCoder = new ethers.utils.AbiCoder();
   const data = [];
-  if (missionName === "snapshot") {
+  if (!missionName) {
+    data.push(DONT_CARE_BYTES32);
+  } else if (missionName === "snapshot") {
     const baseApiUrl = abiCoder.encode(["string"], ["http://example.com"]);
     data.push(baseApiUrl);
 
