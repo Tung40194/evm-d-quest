@@ -28,11 +28,12 @@ abstract contract ChainlinkMissionHandler is IChainlinkMissionHandler, Chainlink
         setJob(jobId);
 
         // LINK_DIVISIBILITY = 10**18
-        linkFee = (1 * LINK_DIVISIBILITY) / 10;
+        linkFee = (1 * LINK_DIVISIBILITY) / 100000;
     }
 
-    /// @dev See {IChainlinkMissionHandler-request}
-    function request(string memory apiUrl) public virtual override returns (bytes32 requestId) {
+    /// @dev send request to oracle
+    /// @param apiUrl: api url oracle will consume the response
+    function request(string memory apiUrl) internal returns (bytes32 requestId) {
         Chainlink.Request memory req = buildChainlinkRequest(job, address(this), this.fulfill.selector);
 
         // Set API url
