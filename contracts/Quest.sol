@@ -400,6 +400,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         // Check for repeated IDs
         for (uint256 i = 0; i < nodes.length; i++) {
             require(nodes[i].id != 0, "A node's id must not be 0");
+            require(nodes[i].id != nodes[i].leftNode && nodes[i].id != nodes[i].rightNode, "self-reference it not allowed");
             if(nodes[i].isMission == true) {
                 // validate for mission node
                 require(nodes[i].missionHandlerAddress != address(0x0), "handler address mustn't be 0x0");
