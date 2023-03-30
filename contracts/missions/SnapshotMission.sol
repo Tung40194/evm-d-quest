@@ -65,7 +65,5 @@ contract SnapshotMission is IMission, ChainlinkMissionHandler {
         bool completed
     ) external virtual override recordChainlinkFulfillment(requestId) {
         IQuest(missionQuests[missionId]).setMissionStatus(quester, missionId, completed);
-
-        emit MissionStatusSet(quester, missionNodeId, completed);
     }
 }
