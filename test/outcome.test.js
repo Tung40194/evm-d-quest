@@ -194,7 +194,7 @@ describe("Testing Outcome", () => {
     await expect(await ftstandardI.balanceOf(quester)).to.equal(toBeRewarded);
   });
 
-  it.only("Should create a quest with a 1-node formula, set up a condition, validate it, and execute the ERC721 unlimited outcome", async () => {
+  it("Should create a quest with a 1-node formula, set up a condition, validate it, and execute the ERC721 unlimited outcome", async () => {
     // encoding data for node
     addr = web3.eth.abi.encodeParameter("address", deployedNft1.address);
     start = web3.eth.abi.encodeParameter("uint256", "1");
@@ -210,16 +210,14 @@ describe("Testing Outcome", () => {
      * ERC20 outcome is unlimited
      */
 
-    
     const firstTokenId = 4;
     const totalERC721 = 20;
     const nftRewardI = await nftReward.attach(deployedNFTReward.address);
 
-    // accounts[0] aka owner of NFTReward will mint to account[3] 20 erc721 token 
-    
-    for (i = 0; i < totalERC721; i++) 
-    {
-        await nftRewardI.connect(accounts[0]).safeMint(accounts[3].address);
+    // accounts[0] aka owner of NFTReward will mint to account[3] 20 erc721 token
+
+    for (i = 0; i < totalERC721; i++) {
+      await nftRewardI.connect(accounts[0]).safeMint(accounts[3].address);
     }
 
     // expect erc20 balance
@@ -316,6 +314,5 @@ describe("Testing Outcome", () => {
     await expect(await pQuest.getQuesterProgress(quester)).to.equal(REWARDED);
     // expect erc721 balance
     await expect(await nftRewardI.ownerOf(firstTokenId)).to.equal(quester);
-    
   });
 });
