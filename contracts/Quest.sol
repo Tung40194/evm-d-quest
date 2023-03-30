@@ -523,3 +523,4 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         return questerMissionsDone[quester][missionId];
     }
 }
+
