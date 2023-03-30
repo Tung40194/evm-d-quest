@@ -1,5 +1,6 @@
 const { ethers } = require("hardhat");
 const helpers = require("@nomicfoundation/hardhat-network-helpers");
+const { DONT_CARE_ADDRESS, DONT_CARE_FUNC_SELECTOR, DONT_CARE_DATA } = require("./constants");
 
 const getCurrentBlockTimestamp = async () => {
   const blockNumber = await ethers.provider.getBlockNumber();
@@ -22,11 +23,11 @@ const advanceBlockTimestamp = async (units) => {
 };
 
 /*
-                root(1)
+                 OR(1)
                 /     \
                /       \
               /         \
-        op1(2)         op2(3)
+         AND(2)         OR(3)
           / \           / \ 
          /   \         /   \
   miss1(4) miss2(5) miss3(6) miss4(7)
@@ -37,8 +38,6 @@ const mockMissionFormula = (missionName, missionHandlerAddress) => {
     AND: 0,
     OR: 1
   };
-
-  const oracleAddress = "0x072c7F4a8e9276f810727Ca68d3c99e6d8a72990";
 
   const abiCoder = new ethers.utils.AbiCoder();
   const data = [];
@@ -51,9 +50,9 @@ const mockMissionFormula = (missionName, missionHandlerAddress) => {
   }
 
   // [id, isMission, missionHandlerAddress, operatorType, leftNode, rightNode, data]
-  const root = [1, false, missionHandlerAddress, operator.NONE, 1, 2, data];
-  const op1 = [2, false, missionHandlerAddress, operator.AND, 3, 4, data];
-  const op2 = [3, false, missionHandlerAddress, operator.OR, 5, 6, data];
+  const root = [1, false, missionHandlerAddress, operator.OR, 2, 3, data];
+  const op1 = [2, false, missionHandlerAddress, operator.AND, 4, 5, data];
+  const op2 = [3, false, missionHandlerAddress, operator.OR, 6, 7, data];
   const miss1 = [4, true, missionHandlerAddress, operator.NONE, 0, 0, data];
   const miss2 = [5, true, missionHandlerAddress, operator.NONE, 0, 0, data];
   const miss3 = [6, true, missionHandlerAddress, operator.NONE, 0, 0, data];
@@ -62,13 +61,15 @@ const mockMissionFormula = (missionName, missionHandlerAddress) => {
   return [root, op1, op2, miss1, miss2, miss3, miss4];
 };
 
-const mockOutcomes = () => {
-  const tokenAddress = "0x072c7F4a8e9276f810727Ca68d3c99e6d8a72990";
-  const functionSelector = "0x12345678";
-  const data = "0x1234";
+const mockOutcomes = (tokenAddr, isLimitedReward = false, totalReward = "10") => {
+  const tokenAddress = tokenAddr || DONT_CARE_ADDRESS;
+  const functionSelector = DONT_CARE_FUNC_SELECTOR;
+  const data = DONT_CARE_DATA;
+  const isNative = tokenAddr ? false : true;
+  const nativeAmount = tokenAddr ? 0 : ethers.utils.parseEther("1");
+  totalReward = ethers.utils.parseUnits(totalReward, 18);
 
-  // [tokenAddress, functionSelector, data, isNative, nativeAmount, isLimitedReward, totalReward]
-  const outcome1 = [tokenAddress, functionSelector, data, false, 1, false, 0];
+  const outcome1 = [tokenAddress, functionSelector, data, isNative, nativeAmount, isLimitedReward, totalReward];
 
   return [outcome1];
 };
@@ -103,5 +104,7 @@ const setupQuest = async (dQuestContract, operatorContract, linkTokenContract, m
 module.exports = {
   getCurrentBlockTimestamp,
   advanceBlockTimestamp,
-  setupQuest
+  setupQuest,
+  mockMissionFormula,
+  mockOutcomes
 };
