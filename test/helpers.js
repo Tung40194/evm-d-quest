@@ -32,7 +32,7 @@ const advanceBlockTimestamp = async (units) => {
          /   \         /   \
   miss1(4) miss2(5) miss3(6) miss4(7)
 */
-const mockMissionFormula = (missionName, missionHandlerAddr) => {
+const mockMissionFormula = (missionName, missionHandlerAddr, missionData) => {
   const operator = {
     NONE: 0,
     AND: 0,
@@ -51,6 +51,15 @@ const mockMissionFormula = (missionName, missionHandlerAddr) => {
 
     const proposal = abiCoder.encode(["string"], ["proposal"]);
     data.push(proposal);
+  } else if (missionName === "nft") {
+    const tokenAddr = abiCoder.encode(["address"], [missionData[0] || DONT_CARE_ADDRESS]);
+    data.push(tokenAddr);
+
+    const startId = abiCoder.encode(["uint256"], [missionData[1] || 0]);
+    data.push(startId);
+
+    const endId = abiCoder.encode(["uint256"], [missionData[2] || 100]);
+    data.push(endId);
   }
 
   // [id, isMission, missionHandlerAddress, operatorType, leftNode, rightNode, data]
@@ -105,10 +114,16 @@ const setupQuest = async (dQuestContract, operatorContract, linkTokenContract, m
   return { instanceQuestContract, missionHandlerContract, mission };
 };
 
+const activeQuest = async (questContract) => {
+  const startTimestamp = await questContract.startTimestamp();
+  await helpers.time.increaseTo(startTimestamp);
+};
+
 module.exports = {
   getCurrentBlockTimestamp,
   advanceBlockTimestamp,
   setupQuest,
   mockMissionFormula,
-  mockOutcomes
+  mockOutcomes,
+  activeQuest
 };
