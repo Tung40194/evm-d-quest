@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
+import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 
 library Types {
     /// @dev Defines the possible types of operators for a mission node.
@@ -65,5 +66,37 @@ library mNodeId2Iterator {
 
     function _getIterator(ResetableId2iterator storage id2itr, uint256 nodeId) internal view returns (uint256) {
         return id2itr.rmap[id2itr.rst][nodeId];
+    }
+}
+
+
+// An improvement for mNodeId2Iterator but standalone to follow upgradeable rules
+library mNodeId2IteratorV2 {
+    using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
+
+    struct Id2Iterator {
+        mapping(uint256 => uint256) map;
+        EnumerableSetUpgradeable.UintSet keys;
+    }
+
+    struct ResetableId2iterator {
+        mapping(uint256 => Id2Iterator) rmap;
+        uint256 rst;
+    }
+
+    function _setIterators(ResetableId2iterator storage id2itr, Types.MissionNode[] memory nodes) internal {
+        id2itr.rst++;
+        for (uint256 index = 0; index < nodes.length; index++) {
+            id2itr.rmap[id2itr.rst].map[nodes[index].id] = index;
+            id2itr.rmap[id2itr.rst].keys.add(nodes[index].id);
+        }
+    }
+
+    function _getIterator(ResetableId2iterator storage id2itr, uint256 nodeId) internal view returns (uint256) {
+        return id2itr.rmap[id2itr.rst].map[nodeId];
+    }
+
+    function _exist(ResetableId2iterator storage id2itr, uint256 nodeId) internal view returns (bool) {
+        return id2itr.rmap[id2itr.rst].keys.contains(nodeId);
     }
 }
