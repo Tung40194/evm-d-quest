@@ -316,7 +316,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         tokenId++;
         uint256 _totalRewardLeft = outcome.totalReward;
         if (outcome.isLimitedReward) {
-            uint256 _totalRewardLeft = outcome.totalReward - 1;
+            _totalRewardLeft = outcome.totalReward - 1;
         }
 
         bytes memory _newData = abi.encodeWithSelector(SELECTOR_SAFETRANSFERFROM, spender, _quester, tokenId);

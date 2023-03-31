@@ -1,4 +1,8 @@
+const { time } = require("@nomicfoundation/hardhat-network-helpers");
 const { expect } = require("chai");
+const { utils } = require("ethers");
+const { ethers } = require("hardhat");
+
 const {
   DONT_CARE_ADDRESS,
   DONT_CARE_BOOL,
@@ -314,5 +318,105 @@ describe("Testing Outcome", () => {
     await expect(await pQuest.getQuesterProgress(quester)).to.equal(REWARDED);
     // expect erc721 balance
     await expect(await nftRewardI.ownerOf(firstTokenId)).to.equal(quester);
+  });
+
+  it.only("Should create a quest with a 1-node formula, set up a condition, validate it, and execute the native unlimited outcome", async () => {
+    // encoding data for node
+    addr = web3.eth.abi.encodeParameter("address", deployedNft1.address);
+    start = web3.eth.abi.encodeParameter("uint256", "1");
+    end = web3.eth.abi.encodeParameter("uint256", "10");
+    data = [addr, start, end];
+    const M1_node = [1, true, deployedMission.address, DONT_CARE_OPERATOR, 0, 0, data];
+
+    missionFormula = [M1_node];
+
+    /*
+     * BUILDING OUTCOME
+     * the outcome: 0.1 native coin for  Quester completed the Quest
+     * native outcome is unlimited
+     */
+
+    const nativeAmount = ethers.utils.parseUnits("1", 18);  
+    const totalNative = ethers.utils.parseEther("10"); 
+    
+    const outcome1 = [DONT_CARE_ADDRESS,
+    DONT_CARE_FUNC_SELECTOR,
+    DONT_CARE_DATA,
+    true, nativeAmount, false, 0];
+    outcomes = [outcome1];
+    /*
+     * START CREATING A QUEST WITH A LIFETIME 30 OF SECONDS IN 10 SECONDS
+     *
+     */
+    currentTimeStamp = await getCurrentBlockTimestamp();
+    questStart = currentTimeStamp + 10;
+    questEnd = questStart + 30;
+
+    // create a quest
+    await deployedDquest.createQuest(missionFormula, outcomes, questStart, questEnd);
+
+    // instantiating a proxy quest contract
+    const questProxy1Address = await deployedDquest.getQuest(0);
+    const pQuest = await quest.attach(questProxy1Address);
+
+    // add Quester
+    await expect(await pQuest.getQuesterProgress(accounts[7].address)).to.equal(NOT_ENROLLED);
+    await advanceBlockTimestamp(20);
+    quester = accounts[7].address;
+    await expect(pQuest.connect(accounts[7]).join()).to.emit(pQuest, "QuesterJoined").withArgs(quester);
+    await expect(await pQuest.getQuesterProgress(accounts[7].address)).to.equal(IN_PROGRESS);
+
+    /*
+     * DISTRIBUTING NFT1 TO QUESTER
+     *
+     */
+    const nft1I = await nft1.attach(deployedNft1.address);
+
+    // give quester 6 first ids from NFT1. This will be eligible because required range is [5,30]
+    await nft1I.connect(accounts[0]).safeMint(quester, "give quester id #0");
+    await nft1I.connect(accounts[0]).safeMint(quester, "give quester id #1");
+    await nft1I.connect(accounts[0]).safeMint(quester, "give quester id #2");
+    await nft1I.connect(accounts[0]).safeMint(quester, "give quester id #3");
+    await nft1I.connect(accounts[0]).safeMint(quester, "give quester id #4");
+    await nft1I.connect(accounts[0]).safeMint(quester, "give quester id #5");
+
+    // validate mission status
+    await pQuest.connect(accounts[7]).validateMission(1);
+    await expect(await pQuest.getMissionStatus(quester, 1)).to.equal(true);
+
+    /*
+     * VALIDADE (M1) (ONLY QUESTER CAN DO THIS)
+     *
+     */
+
+    await pQuest.connect(accounts[7]).validateQuest();
+    await expect(await pQuest.getQuesterProgress(quester)).to.equal(COMPLETED);
+    
+    /*
+     * REWARD SETTING UP. REWARD OWNER NEEDS TO APPROVE QUEST TO TRANSFER ALL HIS 100 RTD
+     *
+     */
+  
+    await accounts[2].sendTransaction({
+        from: accounts[2].address,
+        to: pQuest.address, 
+        value: totalNative, 
+    });
+ 
+    await expect(await ethers.provider.getBalance(pQuest.address)).to.equal(totalNative);
+
+    /*
+     * EXECUTE QUEST OUTCOME (ANYONE CAN DO THIS LET'S USE ACCOUNTS[4])
+     *
+    //  */
+
+    questerBalanceb4 = (await ethers.provider.getBalance(quester)).toBigInt();
+    await pQuest.connect(accounts[4]).executeQuestOutcome(quester);
+    await expect(await pQuest.getQuesterProgress(quester)).to.equal(REWARDED);
+    questerBalanceAf = (await ethers.provider.getBalance(quester)).toBigInt();
+    questerBalance = questerBalanceAf - questerBalanceb4;
+    
+    // expect native balance
+    await expect(questerBalance).to.equal(nativeAmount);
   });
 });
