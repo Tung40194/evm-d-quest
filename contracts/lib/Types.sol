@@ -69,7 +69,6 @@ library mNodeId2Iterator {
     }
 }
 
-
 // An improvement for mNodeId2Iterator but standalone to follow upgradeable rules
 library mNodeId2IteratorV2 {
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
