@@ -240,8 +240,10 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
 
     function executeQuestOutcome(address _quester) external override whenActive nonReentrant {
         _validateQuest(_quester);
-        require(questerProgresses[_quester] == QuesterProgress.Completed, "Quest validation not completed");
         require(isRewardAvailable, "The Quest's run out of Reward");
+        require(questerProgresses[_quester] == QuesterProgress.Completed, "Quest validation not completed");
+        questerProgresses[_quester] = QuesterProgress.Rewarded;
+        
         for (uint256 i = 0; i < outcomes._length(); i++) {
             Types.Outcome memory outcome = outcomes._getOutcome(i);
             if (outcome.isNative) {
@@ -269,7 +271,6 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             }
         }
         _checkSufficientReward();
-        questerProgresses[_quester] = QuesterProgress.Rewarded;
         emit OutcomeExecuted(_quester);  
     }
 
