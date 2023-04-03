@@ -477,7 +477,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     // support find root node of a binary tree
-    function _findRoot(Types.MissionNode[] memory tree) private returns (uint256) {
+    function _findRoot(Types.MissionNode[] memory tree) private view returns (uint256) {
         uint256 n = tree.length;
         bool[] memory isChild = new bool[](n);
 
@@ -509,7 +509,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     // check if referee is not in the node id list
-    function _existReferee(Types.MissionNode[] memory tree) private returns (bool, uint256) {
+    function _existReferee(Types.MissionNode[] memory tree) private view returns (bool, uint256) {
         for (uint256 i = 0; i < tree.length; i++) {
             if (tree[i].leftNode != 0 && !id2itr3._exist(tree[i].leftNode)){
                 return (false, tree[i].leftNode);
