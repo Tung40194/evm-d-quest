@@ -292,7 +292,7 @@ describe("Testing happy cases", () => {
     const nft1I = await nft1.attach(deployedNft1.address);
     const nft2I = await nft2.attach(deployedNft2.address);
 
-    // give quester id #1 from NFT 1. This will not be eligible because required range is [1,10]
+    // give quester id #0 from NFT 1. This will not be eligible because required range is [1,10]
     await nft1I.connect(accounts[0]).safeMint(quester, "give quester id #0");
 
     // give quester 6 first ids from NFT2. This will be eligible because required range is [5,30]

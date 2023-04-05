@@ -12,14 +12,8 @@ async function main() {
 
   // Checking new implemenation storage layout compatibility
   console.log("| - Preparing upgrade & get the implementation contract...");
-  const dQuestImplementationAddress = await upgrades.prepareUpgrade(
-    proxyAddress,
-    newDquestImplementation
-  );
-  console.log(
-    "| - Current Dquest Factory contract implementation at:",
-    dQuestImplementationAddress
-  );
+  const dQuestImplementationAddress = await upgrades.prepareUpgrade(proxyAddress, newDquestImplementation);
+  console.log("| - Current Dquest Factory contract implementation at:", dQuestImplementationAddress);
 }
 
 main()

@@ -1,4 +1,4 @@
-// scripts/prepare_upgrade.js
+// scripts/prepare_upgrade_quest.js
 /*
   To:
     + verify if new contract is valid for an upgrade
