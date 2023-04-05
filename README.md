@@ -2,9 +2,7 @@
 
 On-chain D.Quest is a set of smart contracts that allows Community admins to define Quests consisting of Missions and Rewards and Users to fulfill Missions and claim Rewards, on on-chain.
 
-This project applies beacon proxy Factory upgradable pattern for creating & upgrading Quest contracts while the Dquest factory itself is upgraded following Transparent upgradable pattern
-
-CAN DQuest smart contracts
+This project applies beacon proxy Factory upgradable pattern for creating & upgrading Quest contracts while the Dquest factory itself is upgraded following Transparent upgradable pattern.
 
 ###### Installation
 
@@ -27,16 +25,7 @@ Quest proxy created on-chain via Dquest factory is outside of hardhat upgrades p
 `npx hardhat run --network localhost scripts/for-quest/force-import-proxy.js`
 
 ### 3. Writing an upgraded version of the current contract
-Be sure to strictly follow [contract upgrade rules](https://docs.openzeppelin.com/upgrades-plugins/1.x/writing-upgradeable#modifying-your-contracts) in writing a new implementation contract or new upgrade will bring bugs and unexpected issues. Here are 5 rules to help writing an upgraded contract easier:
-
-```
-1) Inherit the previous version.
-2) Only append state/variable.
-3) Override functions if needed.
-4) Never remove function, only replace a function's body with `revert("Warning: This function is deprecated!")` when it's no longer used.
-5) You can break these rules but you will likely have to handle the copy-paste to maintain contract storage layout.
-6) Use `prepare_upgrade_quest.js` to verify before upgrading with Dquest factory.
-```
+Be sure to strictly follow [contract upgrade rules](https://docs.openzeppelin.com/upgrades-plugins/1.x/writing-upgradeable#modifying-your-contracts) in writing a new implementation contract or new upgrade will bring bugs and unexpected issues. Use `prepare_upgrade_quest.js` to verify before upgrading with Dquest factory.
 
 ### 4. Verify if newly written upgraded contract is OK
 To verify new implementation's compatibility and return the current implementation contract address, check and adapt & edit the proxy address in `script/for-quest/prepare_upgrade_quest.js` and execute the following:

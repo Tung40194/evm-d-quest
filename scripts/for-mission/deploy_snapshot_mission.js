@@ -1,4 +1,4 @@
-// scripts/deploy_dquest_factory.js
+// scripts/deploy_snapshot_mission.js
 const { ethers, upgrades } = require("hardhat");
 
 async function main() {
