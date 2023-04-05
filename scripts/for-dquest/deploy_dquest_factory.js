@@ -17,10 +17,7 @@ async function main() {
     "| - Dquest implementation address:",
     await upgrades.erc1967.getImplementationAddress(dQuestProxy.address)
   );
-  console.log(
-    "| - Dquest admin address:",
-    await upgrades.erc1967.getAdminAddress(dQuestProxy.address)
-  );
+  console.log("| - Dquest admin address:", await upgrades.erc1967.getAdminAddress(dQuestProxy.address));
 }
 
 main();

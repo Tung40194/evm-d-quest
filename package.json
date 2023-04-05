@@ -9,7 +9,7 @@
     "test-coverage": "hardhat coverage",
     "contract-size": "hardhat size-contracts",
     "contract-check": "hardhat check",
-    "prettier": "prettier --write **/*.js contracts/**/*.sol",
+    "prettier": "prettier --write \"**/*.js\" \"contracts/**/*.sol\"",
     "contract-verify": "hardhat verify",
     "deploy-mumbai": "hardhat run scripts/deploy.js --network mumbai"
   },
@@ -71,3 +71,4 @@
     "dotenv": "^16.0.3"
   }
 }
+
