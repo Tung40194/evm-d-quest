@@ -6,6 +6,7 @@ module.exports = {
   DONT_CARE_FUNC_SELECTOR: "0x12341234", //4 bytes
   DONT_CARE_OPERATOR: 1,
   DONT_CARE_ABR_BYTES: ["0x012345", "0x6789abcdef"],
+  DONT_CARE_BYTES32: "0x0000000000000000ffffffffffffffff00000000000000000000000000000000",
   DONT_CARE_DATA: "0xabcdef",
 
   // define operator type

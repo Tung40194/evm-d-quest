@@ -36,7 +36,8 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
 
     bytes4 constant SELECTOR_TRANSFERFROM = bytes4(keccak256(bytes("transferFrom(address,address,uint256)")));
     bytes4 constant SELECTOR_SAFETRANSFERFROM = bytes4(keccak256(bytes("safeTransferFrom(address,address,uint256)")));
-    bytes4 constant SELECTOR_NFTSTANDARDMINT = bytes4(keccak256(bytes("mint(uint256,address[],uint256,uint256[],bytes32[])")));
+    bytes4 constant SELECTOR_NFTSTANDARDMINT =
+        bytes4(keccak256(bytes("mint(uint256,address[],uint256,uint256[],bytes32[])")));
     bytes4 constant SELECTOR_SBTMINT = bytes4(keccak256(bytes("mint(address[],uint256)")));
 
     // utility mapping for NFT handler only
@@ -112,25 +113,15 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         transferOwnership(owner);
     }
 
-    function setMissionStatus(
-        address quester,
-        uint256 missionNodeId,
-        bool isMissionDone
-    ) external whenActive whenNotPaused{
-        
+    function setMissionStatus(address quester, uint256 missionNodeId, bool isMissionDone) external whenActive whenNotPaused {
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
-        require(msg.sender == node.missionHandlerAddress,"States update not allowed");
+        require(msg.sender == node.missionHandlerAddress, "States update not allowed");
         require(questerProgresses[quester] != QuesterProgress.NotEnrolled, "Not a quester");
         questerMissionsDone[quester][missionNodeId] = isMissionDone;
         emit MissionStatusSet(quester, missionNodeId, isMissionDone);
     }
 
-    function setMissionNodeFormulas(Types.MissionNode[] calldata nodes)
-        public
-        override
-        onlyOwner
-        whenInactive
-    {
+    function setMissionNodeFormulas(Types.MissionNode[] calldata nodes) public override onlyOwner whenInactive {
         // TODO: improve validation of input mission nodes
         _validateFormulaInput(nodes);
         require(missionNodeFormulas._set(nodes), "Fail to set mission formula");
@@ -141,9 +132,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
      * @dev evaluate mission formula
      * @param nodeId Always the root node of the formula
      */
-    function _evaluateMissionFormulaTree(
-        uint256 nodeId
-    ) private returns (bool) {
+    function _evaluateMissionFormulaTree(uint256 nodeId) private returns (bool) {
         //TODO validate the binary tree's depth
         Types.MissionNode memory node = missionNodeFormulas._getNode(nodeId);
         if (node.isMission) {
@@ -202,7 +191,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
      */
     function setOutcomes(Types.Outcome[] calldata _outcomes) public override onlyOwner whenInactive {
         require(_outcomes.length > 0, "No outcome provided");
-        
+
         for (uint256 i = 0; i < _outcomes.length; i++) {
             if (_outcomes[i].isNative) {
                 require(_outcomes[i].nativeAmount > 0, "Insufficient native reward");
@@ -213,9 +202,10 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
                     keccak256(abi.encodePacked(_outcomes[i].data)) != keccak256(abi.encodePacked("")),
                     "outcomeData can't be empty"
                 );
-            if (_outcomes[i].isLimitedReward) {
-                require(_outcomes[i].totalReward > 0, "Insufficient token reward");
-            }}
+                if (_outcomes[i].isLimitedReward) {
+                    require(_outcomes[i].totalReward > 0, "Insufficient token reward");
+                }
+            }
         }
         outcomes._set(_outcomes);
         isRewardAvailable = true;
@@ -225,19 +215,15 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
 
     // check if quest has sufficient reward amount for Quester to claim
     function _checkSufficientReward() private {
-        for (uint i = 0; i < outcomes._length(); i++)
-        {
+        for (uint i = 0; i < outcomes._length(); i++) {
             Types.Outcome memory outcome = outcomes._getOutcome(i);
             if (outcome.isLimitedReward == false) {
                 isRewardAvailable = true;
                 break;
-            }
-            else if (outcome.isLimitedReward && outcome.totalReward > 0)
-            {
+            } else if (outcome.isLimitedReward && outcome.totalReward > 0) {
                 isRewardAvailable = true;
                 break;
-            }
-            else {
+            } else {
                 isRewardAvailable = false;
             }
         }
@@ -253,13 +239,12 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
                 outcomes._replace(i, outcome);
             }
             // If one of the Outcome has run out of Reward
-            if (outcome.isLimitedReward && outcome.totalReward == 0)
-            {
+            if (outcome.isLimitedReward && outcome.totalReward == 0) {
                 continue;
-            } 
+            }
             if (outcome.functionSelector == SELECTOR_TRANSFERFROM) {
                 outcome.totalReward = _executeERC20Outcome(_quester, outcome);
-                outcomes._replace(i, outcome); 
+                outcomes._replace(i, outcome);
             }
             if (outcome.functionSelector == SELECTOR_SAFETRANSFERFROM) {
                 (outcome.data, outcome.totalReward) = _executeERC721Outcome(_quester, outcome);
@@ -274,13 +259,13 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         }
         _checkSufficientReward();
         questerProgresses[_quester] = QuesterProgress.Rewarded;
-        emit OutcomeExecuted(_quester);  
+        emit OutcomeExecuted(_quester);
     }
 
-    function _executeERC20Outcome(address _quester, Types.Outcome memory outcome)
-        internal
-        returns(uint256 totalRewardLeft)
-    {
+    function _executeERC20Outcome(
+        address _quester,
+        Types.Outcome memory outcome
+    ) internal returns (uint256 totalRewardLeft) {
         address spender;
         uint256 value;
         bytes memory data = outcome.data;
@@ -301,17 +286,17 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     /**
-    * @dev Executes the ERC721Outcome for the specified quester.
-    * It's currently implemented with 
-    * Admin: setApprovalForAll from Admin's balance
-    * tokenId: sequential tokenId with 1st tokenId passing to Outcome.data
-    * @param _quester The address of the quester whose outcome to execute.
-    * @return newData for Outcome Struct 
-    */
-    function _executeERC721Outcome(address _quester, Types.Outcome memory outcome)
-        internal
-        returns (bytes memory newData, uint256 totalRewardLeft)
-    {
+     * @dev Executes the ERC721Outcome for the specified quester.
+     * It's currently implemented with
+     * Admin: setApprovalForAll from Admin's balance
+     * tokenId: sequential tokenId with 1st tokenId passing to Outcome.data
+     * @param _quester The address of the quester whose outcome to execute.
+     * @return newData for Outcome Struct
+     */
+    function _executeERC721Outcome(
+        address _quester,
+        Types.Outcome memory outcome
+    ) internal returns (bytes memory newData, uint256 totalRewardLeft) {
         address spender;
         uint256 tokenId;
         bytes memory data = outcome.data;
@@ -333,9 +318,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         return (_newData, _totalRewardLeft);
     }
 
-    function _executeNFTStandardOutcome(address _quester, Types.Outcome memory outcome)
-        internal
-    {
+    function _executeNFTStandardOutcome(address _quester, Types.Outcome memory outcome) internal {
         bytes memory data = outcome.data;
         uint256 mintingConditionId;
         uint256 amount;
@@ -352,23 +335,14 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         }
 
         (bool success, bytes memory response) = outcome.tokenAddress.call(
-            abi.encodeWithSelector(
-                SELECTOR_NFTSTANDARDMINT,
-                mintingConditionId,
-                quester,
-                amount,
-                clientIds,
-                merkleRoot
-            )
+            abi.encodeWithSelector(SELECTOR_NFTSTANDARDMINT, mintingConditionId, quester, amount, clientIds, merkleRoot)
         );
-        
+
         require(success, string(response));
     }
 
-    function _executeSBTOutcome(address _quester, Types.Outcome memory outcome)
-        internal
-    {
-        bytes memory data = outcome.data;   
+    function _executeSBTOutcome(address _quester, Types.Outcome memory outcome) internal {
+        bytes memory data = outcome.data;
         uint256 expiration;
         address[] memory quester = new address[](1);
         quester[0] = _quester;
@@ -384,10 +358,10 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         require(success, string(response));
     }
 
-    function _executeNativeOutcome(address _quester, Types.Outcome memory outcome)
-        internal
-        returns(uint256 totalRewardLeft)
-    {
+    function _executeNativeOutcome(
+        address _quester,
+        Types.Outcome memory outcome
+    ) internal returns (uint256 totalRewardLeft) {
         (bool success, bytes memory response) = payable(_quester).call{value: outcome.nativeAmount}("");
         require(success, string(response));
 
@@ -444,7 +418,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     // detect Cycle in a directed binary tree
-    function _hasCycle(Types.MissionNode[] memory nodes, uint256 rootNodeId) private returns(bool) {
+    function _hasCycle(Types.MissionNode[] memory nodes, uint256 rootNodeId) private returns (bool) {
         bool[] memory visited = new bool[](nodes.length);
         return _hasCycleUtil(nodes, visited, rootNodeId);
     }
@@ -496,14 +470,12 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             if (!isChild[i]) {
                 rootCount++;
                 rootNode = tree[i].id;
-                if (rootCount > 1)
-                    revert("tree has several root nodes");
+                if (rootCount > 1) revert("tree has several root nodes");
             }
         }
 
         // there's no node that's referenced by nothing(the root node)
-        if (rootCount == 0)
-            revert("no root found");
+        if (rootCount == 0) revert("no root found");
 
         return rootNode;
     }
@@ -544,8 +516,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     // TODO remove when validateQuest() is upgraded to validateQuest(address quester)
     function _validateQuest(address quester) private returns (bool) {
         _enroll(quester);
-        if (questerProgresses[quester] == QuesterProgress.Completed)
-            return true;
+        if (questerProgresses[quester] == QuesterProgress.Completed) return true;
 
         bool result = _evaluateMissionFormulaTree(formulaRootNodeId);
         if (result == true) {
@@ -555,19 +526,19 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         return result;
     }
 
-    function getMissions() external view override returns(Types.MissionNode[] memory) {
+    function getMissions() external view override returns (Types.MissionNode[] memory) {
         return missionNodeFormulas._getMissions();
     }
 
-    function getOutcomes() external view override returns(Types.Outcome[] memory) {
+    function getOutcomes() external view override returns (Types.Outcome[] memory) {
         return outcomes._getOutcomes();
     }
 
-    function getQuesterProgress(address quester) external view returns(QuesterProgress progress) {
+    function getQuesterProgress(address quester) external view returns (QuesterProgress progress) {
         return questerProgresses[quester];
     }
 
-    function getMissionStatus(address quester, uint256 missionId) external view returns(bool status) {
+    function getMissionStatus(address quester, uint256 missionId) external view returns (bool status) {
         return questerMissionsDone[quester][missionId];
     }
 }
