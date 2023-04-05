@@ -244,26 +244,22 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
 
         for (uint256 i = 0; i < outcomes._length(); i++) {
             Types.Outcome memory outcome = outcomes._getOutcome(i);
-            if (outcome.isNative) {
-                outcome.totalReward = _executeNativeOutcome(_quester, outcome);
-                outcomes._replace(i, outcome);
-            }
             // If one of the Outcome has run out of Reward
             if (outcome.isLimitedReward && outcome.totalReward == 0) {
                 continue;
             }
-            if (outcome.functionSelector == SELECTOR_TRANSFERFROM) {
+            if (outcome.isNative) {
+                outcome.totalReward = _executeNativeOutcome(_quester, outcome);
+                outcomes._replace(i, outcome);
+            } else if (outcome.functionSelector == SELECTOR_TRANSFERFROM) {
                 outcome.totalReward = _executeERC20Outcome(_quester, outcome);
                 outcomes._replace(i, outcome);
-            }
-            if (outcome.functionSelector == SELECTOR_SAFETRANSFERFROM) {
+            } else if (outcome.functionSelector == SELECTOR_SAFETRANSFERFROM) {
                 (outcome.data, outcome.totalReward) = _executeERC721Outcome(_quester, outcome);
                 outcomes._replace(i, outcome);
-            }
-            if (outcome.functionSelector == SELECTOR_SBTMINT) {
+            } else if (outcome.functionSelector == SELECTOR_SBTMINT) {
                 _executeSBTOutcome(_quester, outcome);
-            }
-            if (outcome.functionSelector == SELECTOR_NFTSTANDARDMINT) {
+            } else if (outcome.functionSelector == SELECTOR_NFTSTANDARDMINT) {
                 _executeNFTStandardOutcome(_quester, outcome);
             }
         }
