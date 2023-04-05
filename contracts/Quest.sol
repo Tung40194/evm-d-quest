@@ -116,7 +116,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         address quester,
         uint256 missionNodeId,
         bool isMissionDone
-    ) external whenActive {
+    ) external whenActive whenNotPaused{
         
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(msg.sender == node.missionHandlerAddress,"States update not allowed");
@@ -185,7 +185,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         _unpause();
     }
 
-    function join() external override whenActive questerNotEnrolled {
+    function join() external override whenActive whenNotPaused questerNotEnrolled {
         allQuesters.push(msg.sender);
         questerProgresses[msg.sender] = QuesterProgress.InProgress;
         emit QuesterJoined(msg.sender);
@@ -243,7 +243,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         }
     }
 
-    function executeQuestOutcome(address _quester) external override whenActive nonReentrant {
+    function executeQuestOutcome(address _quester) external override whenActive whenNotPaused nonReentrant {
         require(_validateQuest(_quester) == true, "Quest validation not completed");
         require(isRewardAvailable, "The Quest's run out of Reward");
         for (uint256 i = 0; i < outcomes._length(); i++) {
@@ -521,13 +521,13 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         return (true, 0);
     }
 
-    function erc721SetTokenUsed(uint256 missionNodeId, address addr, uint256 tokenId) external whenActive override {
+    function erc721SetTokenUsed(uint256 missionNodeId, address addr, uint256 tokenId) external whenActive whenNotPaused override {
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(msg.sender == node.missionHandlerAddress, "States update not allowed");
         tokenUsed[addr][tokenId] = true;
     }
 
-    function erc721GetTokenUsed(address addr, uint256 tokenId) external whenActive view override returns(bool) {
+    function erc721GetTokenUsed(address addr, uint256 tokenId) external whenActive whenNotPaused view override returns(bool) {
         return tokenUsed[addr][tokenId];
     }
 
