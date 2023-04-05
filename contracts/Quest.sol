@@ -199,6 +199,10 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         for (uint256 i = 0; i < _outcomes.length; i++) {
             if (_outcomes[i].isNative) {
                 require(_outcomes[i].nativeAmount > 0, "Insufficient native reward");
+                if (_outcomes[i].isLimitedReward) {
+                    require(_outcomes[i].totalReward > 0, "Insufficient total reward amount");
+                    require((_outcomes[i].totalReward % _outcomes[i].nativeAmount) == 0, "Unsuitable reward portions");
+                }
             } else {
                 require(_outcomes[i].tokenAddress != address(0), "Outcome address is invalid");
                 require(_outcomes[i].functionSelector != 0, "functionSelector can't be empty");
@@ -207,7 +211,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
                     "outcomeData can't be empty"
                 );
                 if (_outcomes[i].isLimitedReward) {
-                    require(_outcomes[i].totalReward > 0, "Insufficient token reward");
+                    require(_outcomes[i].totalReward > 0, "Insufficient total reward amount");
                 }
             }
         }
@@ -233,7 +237,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         }
     }
 
-    function executeQuestOutcome(address _quester) external override whenActive nonReentrant {
+    function executeQuestOutcome(address _quester) external override whenActive whenNotPaused nonReentrant {
         _validateQuest(_quester);
         require(isRewardAvailable, "The Quest's run out of Reward");
         require(questerProgresses[_quester] == QuesterProgress.Completed, "progress incomplete or rewarded");
@@ -241,26 +245,22 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
 
         for (uint256 i = 0; i < outcomes._length(); i++) {
             Types.Outcome memory outcome = outcomes._getOutcome(i);
-            if (outcome.isNative) {
-                outcome.totalReward = _executeNativeOutcome(_quester, outcome);
-                outcomes._replace(i, outcome);
-            }
             // If one of the Outcome has run out of Reward
             if (outcome.isLimitedReward && outcome.totalReward == 0) {
                 continue;
             }
-            if (outcome.functionSelector == SELECTOR_TRANSFERFROM) {
+            if (outcome.isNative) {
+                outcome.totalReward = _executeNativeOutcome(_quester, outcome);
+                outcomes._replace(i, outcome);
+            } else if (outcome.functionSelector == SELECTOR_TRANSFERFROM) {
                 outcome.totalReward = _executeERC20Outcome(_quester, outcome);
                 outcomes._replace(i, outcome);
-            }
-            if (outcome.functionSelector == SELECTOR_SAFETRANSFERFROM) {
+            } else if (outcome.functionSelector == SELECTOR_SAFETRANSFERFROM) {
                 (outcome.data, outcome.totalReward) = _executeERC721Outcome(_quester, outcome);
                 outcomes._replace(i, outcome);
-            }
-            if (outcome.functionSelector == SELECTOR_SBTMINT) {
+            } else if (outcome.functionSelector == SELECTOR_SBTMINT) {
                 _executeSBTOutcome(_quester, outcome);
-            }
-            if (outcome.functionSelector == SELECTOR_NFTSTANDARDMINT) {
+            } else if (outcome.functionSelector == SELECTOR_NFTSTANDARDMINT) {
                 _executeNFTStandardOutcome(_quester, outcome);
             }
         }
@@ -287,7 +287,11 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
 
         require(success, string(response));
 
-        uint256 _totalRewardLeft = outcome.totalReward - value;
+        uint256 _totalRewardLeft = outcome.totalReward;
+
+        if (outcome.isLimitedReward) {
+            _totalRewardLeft = _totalRewardLeft - value;
+        }
         return _totalRewardLeft;
     }
 
@@ -318,7 +322,11 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         require(success, string(response));
 
         tokenId++;
-        uint256 _totalRewardLeft = outcome.totalReward - 1;
+        uint256 _totalRewardLeft = outcome.totalReward;
+        if (outcome.isLimitedReward) {
+            _totalRewardLeft = outcome.totalReward - 1;
+        }
+
         bytes memory _newData = abi.encodeWithSelector(SELECTOR_SAFETRANSFERFROM, spender, _quester, tokenId);
 
         return (_newData, _totalRewardLeft);
@@ -371,7 +379,10 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         (bool success, bytes memory response) = payable(_quester).call{value: outcome.nativeAmount}("");
         require(success, string(response));
 
-        uint256 _totalRewardLeft = outcome.totalReward - outcome.nativeAmount;
+        uint256 _totalRewardLeft = outcome.totalReward;
+        if (outcome.isLimitedReward) {
+            _totalRewardLeft = _totalRewardLeft - outcome.nativeAmount;
+        }
         return _totalRewardLeft;
     }
 
