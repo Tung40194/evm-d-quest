@@ -113,7 +113,11 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         transferOwnership(owner);
     }
 
-    function setMissionStatus(address quester, uint256 missionNodeId, bool isMissionDone) external whenActive whenNotPaused {
+    function setMissionStatus(
+        address quester,
+        uint256 missionNodeId,
+        bool isMissionDone
+    ) external whenActive whenNotPaused {
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(msg.sender == node.missionHandlerAddress, "States update not allowed");
         require(questerProgresses[quester] != QuesterProgress.NotEnrolled, "Not a quester");
@@ -379,8 +383,11 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         // Check for repeated IDs
         for (uint256 i = 0; i < nodes.length; i++) {
             require(nodes[i].id != 0, "A node's id must not be 0");
-            require(nodes[i].id != nodes[i].leftNode && nodes[i].id != nodes[i].rightNode, "self-reference it not allowed");
-            if(nodes[i].isMission == true) {
+            require(
+                nodes[i].id != nodes[i].leftNode && nodes[i].id != nodes[i].rightNode,
+                "self-reference it not allowed"
+            );
+            if (nodes[i].isMission == true) {
                 // validate for mission node
                 require(nodes[i].missionHandlerAddress != address(0x0), "handler address mustn't be 0x0");
                 require((nodes[i].leftNode | nodes[i].rightNode) == 0, "M node's left/right id must be 0");
@@ -401,16 +408,15 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
 
         // validate if referee nodes exist in the node id list
         (bool exist, uint256 node) = _existReferee(nodes);
-        if (!exist)
-            revert(string(abi.encodePacked("a referee node #", node.toString(), " not found")));
+        if (!exist) revert(string(abi.encodePacked("a referee node #", node.toString(), " not found")));
 
         // Validate and find root node
         uint256 rootId = _findRoot(nodes);
 
         //TODO Check for loops/cycles
         for (uint256 i = 0; i < nodes.length; i++)
-            if(nodes[i].isMission == false)
-                if(_hasCycle(nodes, nodes[i].id))
+            if (nodes[i].isMission == false)
+                if (_hasCycle(nodes, nodes[i].id))
                     revert(string(abi.encodePacked("a cycle detected at root #", nodes[i].id.toString())));
 
         // record root node id
@@ -424,11 +430,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     // cycle detection helper
-    function _hasCycleUtil(
-        Types.MissionNode[] memory nodes,
-        bool[] memory visited,
-        uint256 id
-    ) private returns (bool) {
+    function _hasCycleUtil(Types.MissionNode[] memory nodes, bool[] memory visited, uint256 id) private returns (bool) {
         Types.MissionNode memory node = nodes[id2itr3._getIterator(id)];
         visited[id2itr3._getIterator(id)] = true;
         if (node.leftNode != 0) {
@@ -483,23 +485,30 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     // check if referee is not in the node id list
     function _existReferee(Types.MissionNode[] memory tree) private view returns (bool, uint256) {
         for (uint256 i = 0; i < tree.length; i++) {
-            if (tree[i].leftNode != 0 && !id2itr3._exist(tree[i].leftNode)){
+            if (tree[i].leftNode != 0 && !id2itr3._exist(tree[i].leftNode)) {
                 return (false, tree[i].leftNode);
             }
-            if (tree[i].rightNode != 0 && !id2itr3._exist(tree[i].rightNode)){
+            if (tree[i].rightNode != 0 && !id2itr3._exist(tree[i].rightNode)) {
                 return (false, tree[i].rightNode);
             }
         }
         return (true, 0);
     }
 
-    function erc721SetTokenUsed(uint256 missionNodeId, address addr, uint256 tokenId) external whenActive whenNotPaused override {
+    function erc721SetTokenUsed(
+        uint256 missionNodeId,
+        address addr,
+        uint256 tokenId
+    ) external override whenActive whenNotPaused {
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(msg.sender == node.missionHandlerAddress, "States update not allowed");
         tokenUsed[addr][tokenId] = true;
     }
 
-    function erc721GetTokenUsed(address addr, uint256 tokenId) external whenActive whenNotPaused view override returns(bool) {
+    function erc721GetTokenUsed(
+        address addr,
+        uint256 tokenId
+    ) external view override whenActive whenNotPaused returns (bool) {
         return tokenUsed[addr][tokenId];
     }
 
