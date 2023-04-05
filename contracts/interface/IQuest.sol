@@ -64,8 +64,9 @@ interface IQuest {
      *  - Nodes' ids MUST be unique.
      *  - Nodes' ids MUST be positive integers in range [1:].
      *  - LeftNode/RightNode MUST be either 0 or refer to other nodes' ids.
-     *  - In case of leafNode (also Mission node(not "operator" node)), its LeftNode/RightNode must be both 0.
-     *  - The input array `nodes` MUST not contain any cycles.
+     *  - Nodes MUST not refer to themselves.
+     *  - In case of leafNode (always Mission node), its LeftNode/RightNode MUST be both 0.
+     *  - The input array `nodes` MUST not contain any cycles or nodes don't form infinite loops.
      *
      *                             OR(1)
      *                           /        `
