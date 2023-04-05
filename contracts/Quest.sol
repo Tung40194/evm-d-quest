@@ -238,7 +238,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         require(isRewardAvailable, "The Quest's run out of Reward");
         require(questerProgresses[_quester] == QuesterProgress.Completed, "progress incomplete or rewarded");
         questerProgresses[_quester] = QuesterProgress.Rewarded;
-        
+
         for (uint256 i = 0; i < outcomes._length(); i++) {
             Types.Outcome memory outcome = outcomes._getOutcome(i);
             if (outcome.isNative) {
@@ -265,7 +265,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             }
         }
         _checkSufficientReward();
-        emit OutcomeExecuted(_quester);  
+        emit OutcomeExecuted(_quester);
     }
 
     function _executeERC20Outcome(
