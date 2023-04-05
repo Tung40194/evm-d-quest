@@ -241,7 +241,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     function executeQuestOutcome(address _quester) external override whenActive nonReentrant {
         _validateQuest(_quester);
         require(isRewardAvailable, "The Quest's run out of Reward");
-        require(questerProgresses[_quester] == QuesterProgress.Completed, "Quest validation not completed");
+        require(questerProgresses[_quester] == QuesterProgress.Completed, "progress incomplete or rewarded");
         questerProgresses[_quester] = QuesterProgress.Rewarded;
         
         for (uint256 i = 0; i < outcomes._length(); i++) {
