@@ -437,7 +437,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         for (uint256 i = 0; i < nodes.length; i++)
             if(nodes[i].isMission == false)
                 if(_hasCycle(nodes, nodes[i].id))
-                    revert(string(abi.encodePacked("mission formula has cycles at root #", nodes[i].id.toString())));
+                    revert(string(abi.encodePacked("a cycle detected at root #", nodes[i].id.toString())));
 
         // record root node id
         formulaRootNodeId = rootId;
