@@ -233,9 +233,12 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         }
     }
 
-    function executeQuestOutcome(address _quester) external override whenActive whenNotPaused nonReentrant {
-        require(_validateQuest(_quester) == true, "Quest validation not completed");
+    function executeQuestOutcome(address _quester) external override whenActive nonReentrant {
+        _validateQuest(_quester);
         require(isRewardAvailable, "The Quest's run out of Reward");
+        require(questerProgresses[_quester] == QuesterProgress.Completed, "progress incomplete or rewarded");
+        questerProgresses[_quester] = QuesterProgress.Rewarded;
+
         for (uint256 i = 0; i < outcomes._length(); i++) {
             Types.Outcome memory outcome = outcomes._getOutcome(i);
             if (outcome.isNative) {
@@ -262,7 +265,6 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
             }
         }
         _checkSufficientReward();
-        questerProgresses[_quester] = QuesterProgress.Rewarded;
         emit OutcomeExecuted(_quester);
     }
 
@@ -528,9 +530,9 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         if (questerProgresses[quester] == QuesterProgress.Completed) return true;
 
         bool result = _evaluateMissionFormulaTree(formulaRootNodeId);
-        if (result == true) {
-            questerProgresses[quester] = QuesterProgress.Completed;
-        }
+        if (result == true)
+            if (questerProgresses[quester] == QuesterProgress.InProgress)
+                questerProgresses[quester] = QuesterProgress.Completed;
 
         return result;
     }
