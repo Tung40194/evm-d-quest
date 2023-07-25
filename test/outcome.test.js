@@ -320,7 +320,7 @@ describe("Testing Outcome", () => {
     await expect(await nftRewardI.ownerOf(firstTokenId)).to.equal(quester);
   });
 
-  it.only("Should create a quest with a 1-node formula, set up a condition, validate it, and execute the native unlimited outcome", async () => {
+  it("Should create a quest with a 1-node formula, set up a condition, validate it, and execute the native unlimited outcome", async () => {
     // encoding data for node
     addr = web3.eth.abi.encodeParameter("address", deployedNft1.address);
     start = web3.eth.abi.encodeParameter("uint256", "1");
