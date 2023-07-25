@@ -4,10 +4,7 @@ const ethUtil = require("ethereumjs-util");
 const { config } = require("hardhat");
 const ethSigUtil = require("@metamask/eth-sig-util");
 const Web3 = require("web3");
-const {
-  SignTypedDataVersion,
-  TypedDataUtils,
-} = require("@metamask/eth-sig-util");
+const { SignTypedDataVersion, TypedDataUtils } = require("@metamask/eth-sig-util");
 const { bufferToHex } = require("ethereumjs-util");
 const {
   DONT_CARE_ADDRESS,
@@ -16,7 +13,7 @@ const {
   DONT_CARE_FUNC_SELECTOR,
   DONT_CARE_OPERATOR,
   DONT_CARE_ABR_BYTES,
-  DONT_CARE_DATA,
+  DONT_CARE_DATA
 } = require("./constants");
 const { getCurrentBlockTimestamp } = require("./helpers");
 
@@ -31,10 +28,7 @@ describe("Testing Forwarder", function (accounts) {
     console.log("chainId=", chainId);
     const hardhatAccounts = config.networks.hardhat.accounts;
     const index = 1; // second wallet
-    const wallet1 = ethers.Wallet.fromMnemonic(
-      hardhatAccounts.mnemonic,
-      hardhatAccounts.path + `/${index}`
-    );
+    const wallet1 = ethers.Wallet.fromMnemonic(hardhatAccounts.mnemonic, hardhatAccounts.path + `/${index}`);
     fromAddress = await wallet1.getAddress();
     privateKey1 = wallet1.privateKey;
 
@@ -49,7 +43,7 @@ describe("Testing Forwarder", function (accounts) {
     quest = await Quest.deploy(forwarder.address);
     await quest.deployed();
     const dquestProxy = await upgrades.deployProxy(Factory, [quest.address], {
-      initializer: "initialize",
+      initializer: "initialize"
     });
     await dquestProxy.deployed();
 
@@ -74,14 +68,7 @@ describe("Testing Forwarder", function (accounts) {
     questEnd = questStart + 30;
 
     // create a proxies
-    await dquestProxy
-      .connect(accounts[0])
-      .createQuest(
-        missionFormula,
-        outcomes,
-        questStart,
-        questEnd
-      ); // proxy id 1
+    await dquestProxy.connect(accounts[0]).createQuest(missionFormula, outcomes, questStart, questEnd); // proxy id 1
 
     // instantiating Proxy1
     questProxy1 = await Quest.attach(await dquestProxy.getQuest(0));
@@ -92,7 +79,7 @@ describe("Testing Forwarder", function (accounts) {
       { name: "name", type: "string" },
       { name: "version", type: "string" },
       { name: "chainId", type: "uint256" },
-      { name: "verifyingContract", type: "address" },
+      { name: "verifyingContract", type: "address" }
     ];
     const ForwardRequest = [
       { name: "from", type: "address" },
@@ -101,19 +88,19 @@ describe("Testing Forwarder", function (accounts) {
       { name: "gas", type: "uint256" },
       { name: "nonce", type: "uint256" },
       { name: "data", type: "bytes" },
-      { name: "validUntilTime", type: "uint256" },
+      { name: "validUntilTime", type: "uint256" }
     ];
 
     const toSign = {
       types: {
         EIP712Domain,
-        ForwardRequest,
+        ForwardRequest
       },
       domain: {
         name: "GSNForwarder",
         version: "0.0.1",
         chainId: 31337,
-        verifyingContract: forwarder.address,
+        verifyingContract: forwarder.address
       },
       primaryType: "ForwardRequest",
       message: {
@@ -121,49 +108,39 @@ describe("Testing Forwarder", function (accounts) {
         to: questProxy1.address,
         value: 0,
         gas: 1e6,
-        nonce: await forwarder
-          .getNonce(accounts[1].address)
-          .then((nonce) => nonce.toNumber()),
+        nonce: await forwarder.getNonce(accounts[1].address).then((nonce) => nonce.toNumber()),
         data: web3.eth.abi.encodeFunctionCall(
           {
-            "inputs": [],
-            "name": "join",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
+            inputs: [],
+            name: "join",
+            outputs: [],
+            stateMutability: "nonpayable",
+            type: "function"
           },
           []
         ),
-        validUntilTime: 1684230004693,
-      },
+        validUntilTime: 1684230004693
+      }
     };
 
     const domainSeparatorHash = bufferToHex(
-      TypedDataUtils.hashStruct(
-        "EIP712Domain",
-        toSign.domain,
-        toSign.types,
-        SignTypedDataVersion.V4
-      )
+      TypedDataUtils.hashStruct("EIP712Domain", toSign.domain, toSign.types, SignTypedDataVersion.V4)
     );
-    const requestTypeHash = TypedDataUtils.hashType(
-      "ForwardRequest",
-      toSign.types
-    );
+    const requestTypeHash = TypedDataUtils.hashType("ForwardRequest", toSign.types);
 
     // SIGNING
     const formatedPrivateKey = Buffer.from(privateKey1.slice(2), "hex");
     const signature = ethSigUtil.signTypedData({
       privateKey: formatedPrivateKey,
       data: toSign,
-      version: SignTypedDataVersion.V4,
+      version: SignTypedDataVersion.V4
     });
 
     // VERIFYING OFF-CHAIN
     const signer = ethSigUtil.recoverTypedSignature({
       data: toSign,
       signature: signature,
-      version: SignTypedDataVersion.V4,
+      version: SignTypedDataVersion.V4
     });
     expect(signer.toLowerCase()).to.equal(toSign.message.from.toLowerCase());
 
@@ -172,13 +149,7 @@ describe("Testing Forwarder", function (accounts) {
     await forwarder.registerDomainSeparator("GSNForwarder", "0.0.1");
     // execute
     let suffixDataEncodeHash = [];
-    await forwarder.execute(
-      toSign.message,
-      domainSeparatorHash,
-      requestTypeHash,
-      suffixDataEncodeHash,
-      signature
-    );
+    await forwarder.execute(toSign.message, domainSeparatorHash, requestTypeHash, suffixDataEncodeHash, signature);
   });
 
   it("sign + verify + execute with atomic string typed suffix", async function () {
@@ -186,7 +157,7 @@ describe("Testing Forwarder", function (accounts) {
       { name: "name", type: "string" },
       { name: "version", type: "string" },
       { name: "chainId", type: "uint256" },
-      { name: "verifyingContract", type: "address" },
+      { name: "verifyingContract", type: "address" }
     ];
     const ForwardRequest = [
       { name: "from", type: "address" },
@@ -197,19 +168,19 @@ describe("Testing Forwarder", function (accounts) {
       { name: "data", type: "bytes" },
       { name: "validUntilTime", type: "uint256" },
       // a new atomic suffix with type string
-      { name: "suffix", type: "string" },
+      { name: "suffix", type: "string" }
     ];
 
     const toSign = {
       types: {
         EIP712Domain,
-        ForwardRequest,
+        ForwardRequest
       },
       domain: {
         name: "GSNForwarder",
         version: "0.0.1",
         chainId: 31337,
-        verifyingContract: forwarder.address,
+        verifyingContract: forwarder.address
       },
       primaryType: "ForwardRequest",
       message: {
@@ -217,50 +188,40 @@ describe("Testing Forwarder", function (accounts) {
         to: questProxy1.address,
         value: 0,
         gas: 1e6,
-        nonce: await forwarder
-          .getNonce(accounts[1].address)
-          .then((nonce) => nonce.toNumber()),
+        nonce: await forwarder.getNonce(accounts[1].address).then((nonce) => nonce.toNumber()),
         data: web3.eth.abi.encodeFunctionCall(
           {
             inputs: [],
             name: "claim",
             outputs: [],
             stateMutability: "payable",
-            type: "function",
+            type: "function"
           },
           []
         ),
         validUntilTime: 1684230004693,
-        suffix: "this is the new suffix data",
-      },
+        suffix: "this is the new suffix data"
+      }
     };
 
     const domainSeparatorHash = bufferToHex(
-      TypedDataUtils.hashStruct(
-        "EIP712Domain",
-        toSign.domain,
-        toSign.types,
-        SignTypedDataVersion.V4
-      )
+      TypedDataUtils.hashStruct("EIP712Domain", toSign.domain, toSign.types, SignTypedDataVersion.V4)
     );
-    const requestTypeHash = TypedDataUtils.hashType(
-      "ForwardRequest",
-      toSign.types
-    );
+    const requestTypeHash = TypedDataUtils.hashType("ForwardRequest", toSign.types);
 
     // SIGNING OFF CHAIN
     const formatedPrivateKey = Buffer.from(privateKey1.slice(2), "hex");
     const signature = ethSigUtil.signTypedData({
       privateKey: formatedPrivateKey,
       data: toSign,
-      version: SignTypedDataVersion.V4,
+      version: SignTypedDataVersion.V4
     });
 
     // VERIFYING OFF-CHAIN
     const signer = ethSigUtil.recoverTypedSignature({
       data: toSign,
       signature: signature,
-      version: SignTypedDataVersion.V4,
+      version: SignTypedDataVersion.V4
     });
     expect(signer.toLowerCase()).to.equal(toSign.message.from.toLowerCase());
 
@@ -272,13 +233,7 @@ describe("Testing Forwarder", function (accounts) {
     // execute
     let suffixData = toSign.message.suffix;
     let suffixDataEncodeHash = ethUtil.keccakFromString(suffixData);
-    await forwarder.execute(
-      toSign.message,
-      domainSeparatorHash,
-      requestTypeHash,
-      suffixDataEncodeHash,
-      signature
-    );
+    await forwarder.execute(toSign.message, domainSeparatorHash, requestTypeHash, suffixDataEncodeHash, signature);
   });
 
   it("sign + verify + execute with struct typed suffix", async function () {
@@ -286,7 +241,7 @@ describe("Testing Forwarder", function (accounts) {
       { name: "name", type: "string" },
       { name: "version", type: "string" },
       { name: "chainId", type: "uint256" },
-      { name: "verifyingContract", type: "address" },
+      { name: "verifyingContract", type: "address" }
     ];
     const ForwardRequest = [
       { name: "from", type: "address" },
@@ -297,25 +252,25 @@ describe("Testing Forwarder", function (accounts) {
       { name: "data", type: "bytes" },
       { name: "validUntilTime", type: "uint256" },
       // a new suffix with type is a struct
-      { name: "alice", type: "People" },
+      { name: "alice", type: "People" }
     ];
     const People = [
       { name: "name", type: "string" },
       { name: "age", type: "uint256" },
-      { name: "area", type: "string" },
+      { name: "area", type: "string" }
     ];
 
     const toSign = {
       types: {
         EIP712Domain,
         ForwardRequest,
-        People,
+        People
       },
       domain: {
         name: "GSNForwarder",
         version: "0.0.1",
         chainId: 31337,
-        verifyingContract: forwarder.address,
+        verifyingContract: forwarder.address
       },
       primaryType: "ForwardRequest",
       message: {
@@ -323,16 +278,14 @@ describe("Testing Forwarder", function (accounts) {
         to: questProxy1.address,
         value: 0,
         gas: 1e6,
-        nonce: await forwarder
-          .getNonce(accounts[1].address)
-          .then((nonce) => nonce.toNumber()),
+        nonce: await forwarder.getNonce(accounts[1].address).then((nonce) => nonce.toNumber()),
         data: web3.eth.abi.encodeFunctionCall(
           {
             inputs: [],
             name: "claim",
             outputs: [],
             stateMutability: "payable",
-            type: "function",
+            type: "function"
           },
           []
         ),
@@ -340,37 +293,29 @@ describe("Testing Forwarder", function (accounts) {
         alice: {
           name: "alice in wonderland",
           age: 29,
-          area: "american",
-        },
-      },
+          area: "american"
+        }
+      }
     };
 
     const domainSeparatorHash = bufferToHex(
-      TypedDataUtils.hashStruct(
-        "EIP712Domain",
-        toSign.domain,
-        toSign.types,
-        SignTypedDataVersion.V4
-      )
+      TypedDataUtils.hashStruct("EIP712Domain", toSign.domain, toSign.types, SignTypedDataVersion.V4)
     );
-    const requestTypeHash = TypedDataUtils.hashType(
-      "ForwardRequest",
-      toSign.types
-    );
+    const requestTypeHash = TypedDataUtils.hashType("ForwardRequest", toSign.types);
 
     // SIGNING OFF CHAIN
     const formatedPrivateKey = Buffer.from(privateKey1.slice(2), "hex");
     const signature = ethSigUtil.signTypedData({
       privateKey: formatedPrivateKey,
       data: toSign,
-      version: SignTypedDataVersion.V4,
+      version: SignTypedDataVersion.V4
     });
 
     // VERIFYING OFF-CHAIN
     const signer = ethSigUtil.recoverTypedSignature({
       data: toSign,
       signature: signature,
-      version: SignTypedDataVersion.V4,
+      version: SignTypedDataVersion.V4
     });
     expect(signer.toLowerCase()).to.equal(toSign.message.from.toLowerCase());
 
@@ -378,10 +323,7 @@ describe("Testing Forwarder", function (accounts) {
     // register domain separator
     await forwarder.registerDomainSeparator("GSNForwarder", "0.0.1");
     // register suffix type. Check EIP721 "Definition of encodeType" for more details on the following request type
-    await forwarder.registerRequestType(
-      toSign.primaryType,
-      "People alice)People(string name,uint256 age,string area)"
-    );
+    await forwarder.registerRequestType(toSign.primaryType, "People alice)People(string name,uint256 age,string area)");
     // execute
     let suffixDataEncode = TypedDataUtils.hashStruct(
       "People",
@@ -389,12 +331,6 @@ describe("Testing Forwarder", function (accounts) {
       toSign.types,
       SignTypedDataVersion.V4
     );
-    await forwarder.execute(
-      toSign.message,
-      domainSeparatorHash,
-      requestTypeHash,
-      suffixDataEncode,
-      signature
-    );
+    await forwarder.execute(toSign.message, domainSeparatorHash, requestTypeHash, suffixDataEncode, signature);
   });
 });

@@ -7,9 +7,7 @@ import "@opengsn/contracts/src/forwarder/Forwarder.sol";
 
 contract QuestV2 is Quest, ERC2771ContextUpgradeable {
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor(
-        Forwarder forwarder
-    ) Quest() ERC2771ContextUpgradeable(address(forwarder)) {}
+    constructor(Forwarder forwarder) Quest() ERC2771ContextUpgradeable(address(forwarder)) {}
 
     function _msgSender()
         internal
@@ -20,12 +18,7 @@ contract QuestV2 is Quest, ERC2771ContextUpgradeable {
         return ERC2771ContextUpgradeable._msgSender();
     }
 
-    function _msgData()
-        internal
-        view
-        override(ContextUpgradeable, ERC2771ContextUpgradeable)
-        returns (bytes calldata)
-    {
+    function _msgData() internal view override(ContextUpgradeable, ERC2771ContextUpgradeable) returns (bytes calldata) {
         return ERC2771ContextUpgradeable._msgData();
     }
 }
