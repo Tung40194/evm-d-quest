@@ -18,4 +18,3 @@ contract NFTReward is ERC721, Ownable {
         _safeMint(to, tokenId);
     }
 }
-

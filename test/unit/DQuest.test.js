@@ -95,12 +95,12 @@ describe("DQuest Unit Test", () => {
       await dQuestContract.createQuest(...questInputs); // quest id 1
       const quest1Address = await dQuestContract.getQuest(1);
 
-      const Quest = await ethers.getContractFactory("QuestV2");
+      const Quest = await ethers.getContractFactory("QuestV2Test");
       const questV2 = await Quest.deploy();
       await dQuestContract.upgradeQuests(questV2.address);
 
-      const quest0 = await ethers.getContractAt("QuestV2", quest0Address);
-      const quest1 = await ethers.getContractAt("QuestV2", quest1Address);
+      const quest0 = await ethers.getContractAt("QuestV2Test", quest0Address);
+      const quest1 = await ethers.getContractAt("QuestV2Test", quest1Address);
 
       expect(await quest0.checkUpgrade()).to.equal(true);
       expect(await quest1.checkUpgrade()).to.equal(true);

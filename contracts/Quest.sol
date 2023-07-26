@@ -48,12 +48,12 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
 
     // TODO: check allQuesters's role
     modifier onlyQuester() {
-        require(questerProgresses[msg.sender] != QuesterProgress.NotEnrolled, "For questers only");
+        require(questerProgresses[_msgSender()] != QuesterProgress.NotEnrolled, "For questers only");
         _;
     }
 
     modifier questerNotEnrolled() {
-        require(questerProgresses[msg.sender] == QuesterProgress.NotEnrolled, "Quester already joined");
+        require(questerProgresses[_msgSender()] == QuesterProgress.NotEnrolled, "Quester already joined");
         _;
     }
 
@@ -119,7 +119,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         bool isMissionDone
     ) external whenActive whenNotPaused {
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
-        require(msg.sender == node.missionHandlerAddress, "States update not allowed");
+        require(_msgSender() == node.missionHandlerAddress, "States update not allowed");
         require(questerProgresses[quester] != QuesterProgress.NotEnrolled, "Not a quester");
         questerMissionsDone[quester][missionNodeId] = isMissionDone;
         emit MissionStatusSet(quester, missionNodeId, isMissionDone);
@@ -153,19 +153,19 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     function validateQuest() external override whenActive whenNotPaused returns (bool) {
-        return _validateQuest(msg.sender);
+        return _validateQuest(_msgSender());
     }
 
     function validateMission(uint256 missionNodeId) public override whenActive whenNotPaused returns (bool) {
-        _enroll(msg.sender);
+        _enroll(_msgSender());
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
         require(node.isMission == true, "Not a mission");
-        bool cache = questerMissionsDone[msg.sender][missionNodeId];
+        bool cache = questerMissionsDone[_msgSender()][missionNodeId];
         // if false, proceed validation at mission handler contract
         if (cache == false) {
             IMission mission = IMission(node.missionHandlerAddress);
             // subsequent call at this trigger will update back the cache
-            return mission.validateMission(msg.sender, node);
+            return mission.validateMission(_msgSender(), node);
         }
         return cache;
     }
@@ -179,9 +179,9 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     function join() external override whenActive whenNotPaused questerNotEnrolled {
-        allQuesters.push(msg.sender);
-        questerProgresses[msg.sender] = QuesterProgress.InProgress;
-        emit QuesterJoined(msg.sender);
+        allQuesters.push(_msgSender());
+        questerProgresses[_msgSender()] = QuesterProgress.InProgress;
+        emit QuesterJoined(_msgSender());
     }
 
     function getTotalQuesters() external view override returns (uint256 totalQuesters) {
@@ -387,7 +387,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
     }
 
     receive() external payable {
-        emit Received(msg.sender, msg.value);
+        emit Received(_msgSender(), msg.value);
     }
 
     // validate mission formula input
@@ -514,7 +514,7 @@ contract Quest is IQuest, Initializable, OwnableUpgradeable, PausableUpgradeable
         uint256 tokenId
     ) external override whenActive whenNotPaused {
         Types.MissionNode memory node = missionNodeFormulas._getNode(missionNodeId);
-        require(msg.sender == node.missionHandlerAddress, "States update not allowed");
+        require(_msgSender() == node.missionHandlerAddress, "States update not allowed");
         tokenUsed[addr][tokenId] = true;
     }
 

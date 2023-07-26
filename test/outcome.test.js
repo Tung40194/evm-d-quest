@@ -320,7 +320,7 @@ describe("Testing Outcome", () => {
     await expect(await nftRewardI.ownerOf(firstTokenId)).to.equal(quester);
   });
 
-  it.only("Should create a quest with a 1-node formula, set up a condition, validate it, and execute the native unlimited outcome", async () => {
+  it("Should create a quest with a 1-node formula, set up a condition, validate it, and execute the native unlimited outcome", async () => {
     // encoding data for node
     addr = web3.eth.abi.encodeParameter("address", deployedNft1.address);
     start = web3.eth.abi.encodeParameter("uint256", "1");
@@ -336,13 +336,10 @@ describe("Testing Outcome", () => {
      * native outcome is unlimited
      */
 
-    const nativeAmount = ethers.utils.parseUnits("1", 18);  
-    const totalNative = ethers.utils.parseEther("10"); 
-    
-    const outcome1 = [DONT_CARE_ADDRESS,
-    DONT_CARE_FUNC_SELECTOR,
-    DONT_CARE_DATA,
-    true, nativeAmount, false, 0];
+    const nativeAmount = ethers.utils.parseUnits("1", 18);
+    const totalNative = ethers.utils.parseEther("10");
+
+    const outcome1 = [DONT_CARE_ADDRESS, DONT_CARE_FUNC_SELECTOR, DONT_CARE_DATA, true, nativeAmount, false, 0];
     outcomes = [outcome1];
     /*
      * START CREATING A QUEST WITH A LIFETIME 30 OF SECONDS IN 10 SECONDS
@@ -391,18 +388,18 @@ describe("Testing Outcome", () => {
 
     await pQuest.connect(accounts[7]).validateQuest();
     await expect(await pQuest.getQuesterProgress(quester)).to.equal(COMPLETED);
-    
+
     /*
      * REWARD SETTING UP. REWARD OWNER NEEDS TO APPROVE QUEST TO TRANSFER ALL HIS 100 RTD
      *
      */
-  
+
     await accounts[2].sendTransaction({
-        from: accounts[2].address,
-        to: pQuest.address, 
-        value: totalNative, 
+      from: accounts[2].address,
+      to: pQuest.address,
+      value: totalNative
     });
- 
+
     await expect(await ethers.provider.getBalance(pQuest.address)).to.equal(totalNative);
 
     /*
@@ -415,7 +412,7 @@ describe("Testing Outcome", () => {
     await expect(await pQuest.getQuesterProgress(quester)).to.equal(REWARDED);
     questerBalanceAf = (await ethers.provider.getBalance(quester)).toBigInt();
     questerBalance = questerBalanceAf - questerBalanceb4;
-    
+
     // expect native balance
     await expect(questerBalance).to.equal(nativeAmount);
   });
