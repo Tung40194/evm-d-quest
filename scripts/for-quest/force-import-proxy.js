@@ -8,7 +8,7 @@
 
 async function main() {
   //TODO: change the quest(proxy) address (beacon proxy) below. Take it on-chain via Dquest::getQuest(index)
-  const proxyAddress = "0xFc542c46141dBDf0b8c89065b83F1f02d527815B";
+  const proxyAddress = "0xFadD077b37169D9ef17744a3d780B54b518228FA";
   const questImplementation = await ethers.getContractFactory("Quest");
 
   // importing compatible-checked/ok new implementation
