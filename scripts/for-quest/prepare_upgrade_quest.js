@@ -14,7 +14,9 @@ async function main() {
 
   // Checking new implemenation storage layout compatibility
   console.log("| - Preparing upgrade & get the implementation contract...");
-  const questImplAddress = await upgrades.prepareUpgrade(proxyAddress, newQuestImplementation, {constructorArgs: ["0xBa1f95E4C02dfa1383E6b0659C83361ef5d276b8"]});
+  const questImplAddress = await upgrades.prepareUpgrade(proxyAddress, newQuestImplementation, {
+    constructorArgs: ["0xBa1f95E4C02dfa1383E6b0659C83361ef5d276b8"]
+  });
   console.log("| - Current Quest contract implementation at:", questImplAddress);
 }
 
