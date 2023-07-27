@@ -12,7 +12,10 @@ async function main() {
   const questImplementation = await ethers.getContractFactory("QuestV2");
 
   // importing compatible-checked/ok new implementation
-  await upgrades.forceImport(proxyAddress, questImplementation, { kind: "beacon", constructorArgs: ["0xBa1f95E4C02dfa1383E6b0659C83361ef5d276b8"] });
+  await upgrades.forceImport(proxyAddress, questImplementation, {
+    kind: "beacon",
+    constructorArgs: ["0xBa1f95E4C02dfa1383E6b0659C83361ef5d276b8"]
+  });
   console.log("| - Imported new quest implementation to hardhat upgrades management system");
 }
 
