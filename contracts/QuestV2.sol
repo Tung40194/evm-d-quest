@@ -21,4 +21,8 @@ contract QuestV2 is Quest, ERC2771ContextUpgradeable {
     function _msgData() internal view override(ContextUpgradeable, ERC2771ContextUpgradeable) returns (bytes calldata) {
         return ERC2771ContextUpgradeable._msgData();
     }
+
+    function _contextSuffixLength() internal view override(ERC2771ContextUpgradeable, ContextUpgradeable) returns (uint256) {
+        return super._contextSuffixLength();
+    }
 }
