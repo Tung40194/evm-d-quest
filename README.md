@@ -1,4 +1,4 @@
-# CAN EVM DQuest
+# EVM DQuest
 
 On-chain D.Quest is a set of smart contracts that allows Community admins to define Quests consisting of Missions and Rewards and Users to fulfill Missions and claim Rewards on-chain.
 
